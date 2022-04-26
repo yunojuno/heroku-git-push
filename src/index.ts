@@ -1,84 +1,96 @@
 import { execSync, exec } from 'child_process';
-import { getInput, info, setFailed } from "@actions/core";
+import { error, getInput, getMultilineInput, info, setFailed } from "@actions/core";
 
-const ENV = {
+const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
-  devAppName: getInput("dev_app_name"),
-  // uatAppName: core.getInput("uat_app_name"),
+  appNames: getMultilineInput("app_names"),
 } as const;
 
-type Env = typeof ENV;
+const checkInputs = () => {
+  const allPresent =
+    Object.values(inputs).every((value) => !!value && !!value.length)
 
-const createNetrcFile = ({ email, apiKey }: Env) => execSync(`cat >~/.netrc <<EOF
+  if (!allPresent) {
+    throw new Error("Missing an input variable")
+  }
+}
+
+const setGitConfig = () => {
+  execSync(`git config user.name "Github Heroku Deployment"`);
+  execSync(`git config user.email ${inputs.email}`);
+};
+
+const createNetrcFile = () => execSync(`cat >~/.netrc <<EOF
 machine api.heroku.com
-    login ${email}
-    password ${apiKey}
+    login ${inputs.email}
+    password ${inputs.apiKey}
 machine git.heroku.com
-    login ${email}
-    password ${apiKey}
+    login ${inputs.email}
+    password ${inputs.apiKey}
 EOF`);
 
-const addRemotes = ({ devAppName }: Env) => {
-  const addRemote = (app: string) => {
+const addRemotes = () => {
+  const addRemote = (app: string, index: number) => {
     try {
-      info("Setting remote with Heroku CLI...")
+      info(`[App ${index}] Setting remote with Heroku CLI...`);
       execSync(`heroku git:remote --app ${app}`);
-      info("Finished setting remote with Heroku CLI")
-      info("Renaming remote branch...")
+      info(`[App ${index}] Finished setting remote with Heroku CLI`);
+
+      info(`[App ${index}] Renaming remote branch...`);
       execSync(`git remote rename heroku ${app}`);
-      info("Finished renaming remote branch")
+      info(`[App ${index}] Finished renaming remote branch`);
     } catch (e) {
-      setFailed((e as any).message);
+      error(`An error occurred whilst setting remote for app [${index}].`);
+      e instanceof Error && setFailed(e);
     }
   };
 
-  addRemote(devAppName);
-  // addRemote(uatAppName);
+  inputs.appNames.forEach(addRemote);
 };
 
-const deploy = ({ devAppName }: Env) => {
-  const pushRemote = (app: string) => {
-    info("Pushing master to heroku remote...")
-    exec(`git push ${app} master`, { timeout: 5000 }, function(error, stdout, stderr){
+const pushRemotes = (branch: string) => {
+  const pushRemote = (app: string, index: number) => {
+    info(`[App ${index}] Pushing branch to Heroku remote...`);
+    exec(`git push ${app} ${branch}`, { timeout: 5000 }, function(err, stdout, stderr){
       if(stderr) {
+        error(`An error occurred whilst pushing branch for app [${index}].`);
         setFailed(stderr);
       }
       info(stdout);
     });
 
-    
-    info("Finished pushing master to heroku remote")
+
+    info(`[App ${index}] Finished pushing branch to Heroku remote`);
   };
 
-  pushRemote(devAppName);
-  // pushRemote(uatAppName);
+  inputs.appNames.forEach(pushRemote);
 };
 
 const main = async () => {
-  info("Setting git config...")
-  execSync(`git config user.name "YJ CI"`);
-  execSync(`git config user.email ${ENV.email}`);
-  info("Finished setting git config")
+  const branch = execSync("git branch --show-current").toString().trim();
 
-  const hasUncommittedChanges = !!execSync("git status --porcelain").toString().trim();
+  info("Checking all input variables are present...")
+  checkInputs();
+  info("All input variables are present!")
 
-  if (hasUncommittedChanges) {
-    setFailed("Branch has uncommitted changes - aborting...");
-    return;
-  }
+  info("Setting git config...");
+  setGitConfig();
+  info("Finished setting git config!");
 
-  info("Creating .netrc file...")
-  createNetrcFile(ENV);
-  info("Finished creating .netrc file")
+  info("Creating .netrc file...");
+  createNetrcFile();
+  info("Finished creating .netrc file!");
 
-  info("Setting remotes...")
-  addRemotes(ENV);
-  info("Finished setting remotes")
+  info("Setting remote(s)...");
+  addRemotes();
+  info("Finished setting remote(s)!");
 
-  info("Deploying...")
-  deploy(ENV);
-  info("Finished deploying")
+  info("Pushing to Heroku remote(s)...");
+  pushRemotes(branch);
+  info("Finished pushing to Heroku remote(s)!");
 };
 
-main().catch(console.error);
+main().catch((err) => {
+  setFailed(err);
+});

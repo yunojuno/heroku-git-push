@@ -399,18 +399,18 @@ var require_tunnel = __commonJS({
         if (res.statusCode !== 200) {
           debug("tunneling socket could not be established, statusCode=%d", res.statusCode);
           socket.destroy();
-          var error = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self.removeSocket(placeholder);
           return;
         }
         if (head.length > 0) {
           debug("got illegal response body from proxy");
           socket.destroy();
-          var error = new Error("got illegal response body from proxy");
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("got illegal response body from proxy");
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self.removeSocket(placeholder);
           return;
         }
@@ -421,9 +421,9 @@ var require_tunnel = __commonJS({
       function onError(cause) {
         connectReq.removeAllListeners();
         debug("tunneling socket could not be established, cause=%s\n", cause.message, cause.stack);
-        var error = new Error("tunneling socket could not be established, cause=" + cause.message);
-        error.code = "ECONNRESET";
-        options.request.emit("error", error);
+        var error2 = new Error("tunneling socket could not be established, cause=" + cause.message);
+        error2.code = "ECONNRESET";
+        options.request.emit("error", error2);
         self.removeSocket(placeholder);
       }
     };
@@ -1087,12 +1087,12 @@ var require_oidc_utils = __commonJS({
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
           const httpclient = OidcClient.createHttpClient();
-          const res = yield httpclient.getJson(id_token_url).catch((error) => {
+          const res = yield httpclient.getJson(id_token_url).catch((error2) => {
             throw new Error(`Failed to get ID Token. 
  
-        Error Code : ${error.statusCode}
+        Error Code : ${error2.statusCode}
  
-        Error Message: ${error.result.message}`);
+        Error Message: ${error2.result.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
           if (!id_token) {
@@ -1113,8 +1113,8 @@ var require_oidc_utils = __commonJS({
             const id_token = yield OidcClient.getCall(id_token_url);
             core_1.setSecret(id_token);
             return id_token;
-          } catch (error) {
-            throw new Error(`Error message: ${error.message}`);
+          } catch (error2) {
+            throw new Error(`Error message: ${error2.message}`);
           }
         });
       }
@@ -1398,11 +1398,11 @@ var require_core = __commonJS({
       return val.trim();
     }
     exports.getInput = getInput2;
-    function getMultilineInput(name, options) {
-      const inputs = getInput2(name, options).split("\n").filter((x) => x !== "");
-      return inputs;
+    function getMultilineInput2(name, options) {
+      const inputs2 = getInput2(name, options).split("\n").filter((x) => x !== "");
+      return inputs2;
     }
-    exports.getMultilineInput = getMultilineInput;
+    exports.getMultilineInput = getMultilineInput2;
     function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
@@ -1426,7 +1426,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     exports.setCommandEcho = setCommandEcho;
     function setFailed2(message) {
       process.exitCode = ExitCode.Failure;
-      error(message);
+      error2(message);
     }
     exports.setFailed = setFailed2;
     function isDebug() {
@@ -1437,10 +1437,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("debug", {}, message);
     }
     exports.debug = debug;
-    function error(message, properties = {}) {
+    function error2(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.error = error;
+    exports.error = error2;
     function warning(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -1499,65 +1499,77 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 init_cjs_shims();
 var import_child_process = require("child_process");
 var import_core = __toESM(require_core());
-var ENV = {
+var inputs = {
   email: (0, import_core.getInput)("email"),
   apiKey: (0, import_core.getInput)("api_key"),
-  devAppName: (0, import_core.getInput)("dev_app_name")
+  appNames: (0, import_core.getMultilineInput)("app_names")
 };
-var createNetrcFile = ({ email, apiKey }) => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
+var checkInputs = () => {
+  const allPresent = Object.values(inputs).every((value) => !!value && !!value.length);
+  if (!allPresent) {
+    throw new Error("Missing an input variable");
+  }
+};
+var setGitConfig = () => {
+  (0, import_child_process.execSync)(`git config user.name "Github Heroku Deployment"`);
+  (0, import_child_process.execSync)(`git config user.email ${inputs.email}`);
+};
+var createNetrcFile = () => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
 machine api.heroku.com
-    login ${email}
-    password ${apiKey}
+    login ${inputs.email}
+    password ${inputs.apiKey}
 machine git.heroku.com
-    login ${email}
-    password ${apiKey}
+    login ${inputs.email}
+    password ${inputs.apiKey}
 EOF`);
-var addRemotes = ({ devAppName }) => {
-  const addRemote = (app) => {
+var addRemotes = () => {
+  const addRemote = (app, index) => {
     try {
-      (0, import_core.info)("Setting remote with Heroku CLI...");
+      (0, import_core.info)(`[App ${index}] Setting remote with Heroku CLI...`);
       (0, import_child_process.execSync)(`heroku git:remote --app ${app}`);
-      (0, import_core.info)("Finished setting remote with Heroku CLI");
-      (0, import_core.info)("Renaming remote branch...");
+      (0, import_core.info)(`[App ${index}] Finished setting remote with Heroku CLI`);
+      (0, import_core.info)(`[App ${index}] Renaming remote branch...`);
       (0, import_child_process.execSync)(`git remote rename heroku ${app}`);
-      (0, import_core.info)("Finished renaming remote branch");
+      (0, import_core.info)(`[App ${index}] Finished renaming remote branch`);
     } catch (e) {
-      (0, import_core.setFailed)(e.message);
+      (0, import_core.error)(`An error occurred whilst setting remote for app [${index}].`);
+      e instanceof Error && (0, import_core.setFailed)(e);
     }
   };
-  addRemote(devAppName);
+  inputs.appNames.forEach(addRemote);
 };
-var deploy = ({ devAppName }) => {
-  const pushRemote = (app) => {
-    (0, import_core.info)("Pushing master to heroku remote...");
-    (0, import_child_process.exec)(`git push ${app} master`, { timeout: 5e3 }, function(error, stdout, stderr) {
+var pushRemotes = (branch) => {
+  const pushRemote = (app, index) => {
+    (0, import_core.info)(`[App ${index}] Pushing branch to Heroku remote...`);
+    (0, import_child_process.exec)(`git push ${app} ${branch}`, { timeout: 5e3 }, function(err, stdout, stderr) {
       if (stderr) {
+        (0, import_core.error)(`An error occurred whilst pushing branch for app [${index}].`);
         (0, import_core.setFailed)(stderr);
       }
       (0, import_core.info)(stdout);
     });
-    (0, import_core.info)("Finished pushing master to heroku remote");
+    (0, import_core.info)(`[App ${index}] Finished pushing branch to Heroku remote`);
   };
-  pushRemote(devAppName);
+  inputs.appNames.forEach(pushRemote);
 };
 var main = async () => {
+  const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();
+  (0, import_core.info)("Checking all input variables are present...");
+  checkInputs();
+  (0, import_core.info)("All input variables are present!");
   (0, import_core.info)("Setting git config...");
-  (0, import_child_process.execSync)(`git config user.name "YJ CI"`);
-  (0, import_child_process.execSync)(`git config user.email ${ENV.email}`);
-  (0, import_core.info)("Finished setting git config");
-  const hasUncommittedChanges = !!(0, import_child_process.execSync)("git status --porcelain").toString().trim();
-  if (hasUncommittedChanges) {
-    (0, import_core.setFailed)("Branch has uncommitted changes - aborting...");
-    return;
-  }
+  setGitConfig();
+  (0, import_core.info)("Finished setting git config!");
   (0, import_core.info)("Creating .netrc file...");
-  createNetrcFile(ENV);
-  (0, import_core.info)("Finished creating .netrc file");
-  (0, import_core.info)("Setting remotes...");
-  addRemotes(ENV);
-  (0, import_core.info)("Finished setting remotes");
-  (0, import_core.info)("Deploying...");
-  deploy(ENV);
-  (0, import_core.info)("Finished deploying");
+  createNetrcFile();
+  (0, import_core.info)("Finished creating .netrc file!");
+  (0, import_core.info)("Setting remote(s)...");
+  addRemotes();
+  (0, import_core.info)("Finished setting remote(s)!");
+  (0, import_core.info)("Pushing to Heroku remote(s)...");
+  pushRemotes(branch);
+  (0, import_core.info)("Finished pushing to Heroku remote(s)!");
 };
-main().catch(console.error);
+main().catch((err) => {
+  (0, import_core.setFailed)(err);
+});
