@@ -22,6 +22,7 @@ EOF`;
 const addRemotes = ({ devAppName }: Env) => {
   const addRemote = (app: string) => {
     execSync(`heroku git:remote --app ${app}`);
+    execSync("git remote");
     execSync(`git remote rename heroku ${app}`);
   };
 
