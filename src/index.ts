@@ -1,5 +1,5 @@
 import { exec, execSync } from 'child_process';
-import { getInput, setFailed } from "@actions/core";
+import { getInput, info, setFailed } from "@actions/core";
 
 const ENV = {
   email: getInput("email"),
@@ -22,9 +22,12 @@ EOF`);
 const addRemotes = ({ devAppName }: Env) => {
   const addRemote = (app: string) => {
     try {
+      info("Setting remote with Heroku CLI...")
       execSync(`heroku git:remote --app ${app}`);
-      execSync("git remote");
+      info("Finished setting remote with Heroku CLI")
+      info("Renaming remote branch...")
       execSync(`git remote rename heroku ${app}`);
+      info("Finished renaming remote branch")
     } catch (e) {
       setFailed((e as any).message);
     }
@@ -36,7 +39,9 @@ const addRemotes = ({ devAppName }: Env) => {
 
 const deploy = ({ devAppName }: Env) => {
   const pushRemote = (app: string) => {
-    exec(`git push ${app} master`);
+    info("Pushing master to heroku remote...")
+    execSync(`git push ${app} master`);
+    info("Finished pushing master to heroku remote")
   };
 
   pushRemote(devAppName);
@@ -44,18 +49,29 @@ const deploy = ({ devAppName }: Env) => {
 };
 
 const main = async () => {
+  info("Setting git config...")
   execSync(`git config user.name "YJ CI"`);
   execSync(`git config user.email ${ENV.email}`);
+  info("Finished setting git config")
 
   const hasUncommittedChanges = !!execSync("git status --porcelain").toString().trim();
 
   if (hasUncommittedChanges) {
-    throw new Error("Uncommitted changes were found - aborting");
+    setFailed("Branch has uncommitted changes - aborting...");
+    return;
   }
 
+  info("Creating .netrc file...")
   createNetrcFile(ENV);
+  info("Finished creating .netrc file")
+
+  info("Setting remotes...")
   addRemotes(ENV);
+  info("Finished setting remotes")
+
+  info("Deploying...")
   deploy(ENV);
+  info("Finished deploying")
 };
 
 main().catch(console.error);
