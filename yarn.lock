@@ -655,7 +655,7 @@ ts-interface-checker@^0.1.9:
 
 tsup@^5.12.6:
   version "5.12.6"
-  resolved "https://registry.npmjs.org/tsup/-/tsup-5.12.6.tgz"
+  resolved "https://registry.yarnpkg.com/tsup/-/tsup-5.12.6.tgz#29e057066bcc2cdd0238104e5a68e95d4f6f49a6"
   integrity sha512-tpePOgdMRKRgazF+ujq9k1Fo44PUFUJJjRLtxq87pQrYW/Ub/fu1GpFGLzdUF9qjJ4FX1ykhf2d9mWCNy+jAtg==
   dependencies:
     bundle-require "^3.0.2"
