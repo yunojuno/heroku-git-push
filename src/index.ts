@@ -2,7 +2,7 @@ import { exec, execSync } from 'child_process';
 import { getInput } from "@actions/core";
 
 const ENV = {
-  email: getInput("heroku_email"),
+  email: getInput("email"),
   apiKey: getInput("api_key"),
   devAppName: getInput("dev_app_name"),
   // uatAppName: core.getInput("uat_app_name"),
