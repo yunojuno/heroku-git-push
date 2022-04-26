@@ -1,5 +1,5 @@
 import { exec, execSync } from 'child_process';
-import { getInput } from "@actions/core";
+import { getInput, setFailed } from "@actions/core";
 
 const ENV = {
   email: getInput("email"),
@@ -21,9 +21,13 @@ EOF`);
 
 const addRemotes = ({ devAppName }: Env) => {
   const addRemote = (app: string) => {
-    execSync(`heroku git:remote --app ${app}`);
-    execSync("git remote");
-    execSync(`git remote rename heroku ${app}`);
+    try {
+      execSync(`heroku git:remote --app ${app}`);
+      execSync("git remote");
+      execSync(`git remote rename heroku ${app}`);
+    } catch (e) {
+      setFailed((e as any).message);
+    }
   };
 
   addRemote(devAppName);

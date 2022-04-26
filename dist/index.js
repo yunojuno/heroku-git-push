@@ -1424,11 +1424,11 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issue("echo", enabled ? "on" : "off");
     }
     exports.setCommandEcho = setCommandEcho;
-    function setFailed(message) {
+    function setFailed2(message) {
       process.exitCode = ExitCode.Failure;
       error(message);
     }
-    exports.setFailed = setFailed;
+    exports.setFailed = setFailed2;
     function isDebug() {
       return process.env["RUNNER_DEBUG"] === "1";
     }
@@ -1514,9 +1514,13 @@ machine git.heroku.com
 EOF`);
 var addRemotes = ({ devAppName }) => {
   const addRemote = (app) => {
-    (0, import_child_process.execSync)(`heroku git:remote --app ${app}`);
-    (0, import_child_process.execSync)("git remote");
-    (0, import_child_process.execSync)(`git remote rename heroku ${app}`);
+    try {
+      (0, import_child_process.execSync)(`heroku git:remote --app ${app}`);
+      (0, import_child_process.execSync)("git remote");
+      (0, import_child_process.execSync)(`git remote rename heroku ${app}`);
+    } catch (e) {
+      (0, import_core.setFailed)(e.message);
+    }
   };
   addRemote(devAppName);
 };
