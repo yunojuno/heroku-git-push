@@ -1530,7 +1530,12 @@ var addRemotes = ({ devAppName }) => {
 var deploy = ({ devAppName }) => {
   const pushRemote = (app) => {
     (0, import_core.info)("Pushing master to heroku remote...");
-    (0, import_child_process.exec)(`git push ${app} master`, { timeout: 5e3 });
+    (0, import_child_process.exec)(`git push ${app} master`, { timeout: 5e3 }, function(error, stdout, stderr) {
+      if (stderr) {
+        (0, import_core.setFailed)(stderr);
+      }
+      (0, import_core.info)(stdout);
+    });
     (0, import_core.info)("Finished pushing master to heroku remote");
   };
   pushRemote(devAppName);
