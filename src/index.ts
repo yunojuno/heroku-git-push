@@ -10,14 +10,14 @@ const ENV = {
 
 type Env = typeof ENV;
 
-const createNetrcFile = ({ email, apiKey }: Env) => `cat >~/.netrc <<EOF
+const createNetrcFile = ({ email, apiKey }: Env) => execSync(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${email}
     password ${apiKey}
 machine git.heroku.com
     login ${email}
     password ${apiKey}
-EOF`;
+EOF`);
 
 const addRemotes = ({ devAppName }: Env) => {
   const addRemote = (app: string) => {
