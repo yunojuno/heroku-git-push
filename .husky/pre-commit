@@ -7,6 +7,6 @@ MODIFIED_DIST=$(git status --porcelain | grep " dist/index.js")
 
 if [ -n "$MODIFIED_DIST" ]
 then
+  echo "DIST WAS MODIFIED"
   git add dist/index.js
-  git commit --amend --no-edit --no-verify
 fi
