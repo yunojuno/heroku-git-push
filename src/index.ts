@@ -40,7 +40,7 @@ const addRemotes = ({ devAppName }: Env) => {
 const deploy = ({ devAppName }: Env) => {
   const pushRemote = (app: string) => {
     info("Pushing master to heroku remote...")
-    execSync(`git push ${app} misc/heroku-push-action`);
+    execSync(`git push ${app} master`);
     info("Finished pushing master to heroku remote")
   };
 
