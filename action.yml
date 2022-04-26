@@ -4,10 +4,10 @@ inputs:
   email:
     description: 'Email associated with Heroku for pushing'
     required: true
-  apiKey:
+  api_key:
     description: 'Heroku API key'
     required: true
-  devAppName:
+  dev_app_name:
     description: 'Name of the dev app on heroku'
     required: true
 runs:
