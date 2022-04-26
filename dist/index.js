@@ -1510,10 +1510,6 @@ var checkInputs = () => {
     throw new Error("Missing an input variable");
   }
 };
-var setGitConfig = () => {
-  (0, import_child_process.execSync)(`git config user.name "Github Heroku Deployment"`);
-  (0, import_child_process.execSync)(`git config user.email ${inputs.email}`);
-};
 var createNetrcFile = () => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${inputs.email}
@@ -1554,12 +1550,12 @@ var pushRemotes = (branch) => {
 };
 var main = async () => {
   const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();
+  if (branch !== "master" || "main") {
+    (0, import_core.setFailed)("Branch must be 'master' or 'main'");
+  }
   (0, import_core.info)("Checking all input variables are present...");
   checkInputs();
   (0, import_core.info)("All input variables are present!");
-  (0, import_core.info)("Setting git config...");
-  setGitConfig();
-  (0, import_core.info)("Finished setting git config!");
   (0, import_core.info)("Creating .netrc file...");
   createNetrcFile();
   (0, import_core.info)("Finished creating .netrc file!");
