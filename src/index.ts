@@ -16,11 +16,6 @@ const checkInputs = () => {
   }
 }
 
-const setGitConfig = () => {
-  execSync(`git config user.name "Github Heroku Deployment"`);
-  execSync(`git config user.email ${inputs.email}`);
-};
-
 const createNetrcFile = () => execSync(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${inputs.email}
@@ -70,13 +65,13 @@ const pushRemotes = (branch: string) => {
 const main = async () => {
   const branch = execSync("git branch --show-current").toString().trim();
 
+  if (branch !== 'master' || 'main') {
+    setFailed("Branch must be 'master' or 'main'")
+  }
+
   info("Checking all input variables are present...")
   checkInputs();
   info("All input variables are present!")
-
-  info("Setting git config...");
-  setGitConfig();
-  info("Finished setting git config!");
 
   info("Creating .netrc file...");
   createNetrcFile();
