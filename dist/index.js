@@ -1504,17 +1504,18 @@ var ENV = {
   apiKey: (0, import_core.getInput)("api_key"),
   devAppName: (0, import_core.getInput)("dev_app_name")
 };
-var createNetrcFile = ({ email, apiKey }) => `cat >~/.netrc <<EOF
+var createNetrcFile = ({ email, apiKey }) => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${email}
     password ${apiKey}
 machine git.heroku.com
     login ${email}
     password ${apiKey}
-EOF`;
+EOF`);
 var addRemotes = ({ devAppName }) => {
   const addRemote = (app) => {
     (0, import_child_process.execSync)(`heroku git:remote --app ${app}`);
+    (0, import_child_process.execSync)("git remote");
     (0, import_child_process.execSync)(`git remote rename heroku ${app}`);
   };
   addRemote(devAppName);
