@@ -1,4 +1,4 @@
-import { exec, execSync } from 'child_process';
+import { execSync } from 'child_process';
 import { getInput, info, setFailed } from "@actions/core";
 
 const ENV = {
@@ -40,7 +40,7 @@ const addRemotes = ({ devAppName }: Env) => {
 const deploy = ({ devAppName }: Env) => {
   const pushRemote = (app: string) => {
     info("Pushing master to heroku remote...")
-    execSync(`git push ${app} master`);
+    execSync(`git push ${app} master --force`);
     info("Finished pushing master to heroku remote")
   };
 
