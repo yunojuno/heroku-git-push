@@ -1500,7 +1500,7 @@ init_cjs_shims();
 var import_child_process = require("child_process");
 var import_core = __toESM(require_core());
 var ENV = {
-  email: (0, import_core.getInput)("heroku_email"),
+  email: (0, import_core.getInput)("email"),
   apiKey: (0, import_core.getInput)("api_key"),
   devAppName: (0, import_core.getInput)("dev_app_name")
 };
