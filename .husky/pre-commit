@@ -1,9 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-yarn build
-
-if [[ $(git status --porcelain | grep " dist/index.js") ]]
-then
-  git add dist/index.js
-fi
