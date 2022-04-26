@@ -3,10 +3,7 @@
 
 yarn build
 
-MODIFIED_DIST=$(git status --porcelain | grep " dist/index.js")
-
-if [ -n "$MODIFIED_DIST" ]
+if [[ $(git status --porcelain | grep " dist/index.js") ]]
 then
-  echo "DIST WAS MODIFIED"
   git add dist/index.js
 fi
