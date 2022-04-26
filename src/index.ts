@@ -30,6 +30,8 @@ machine git.heroku.com
     password ${inputs.apiKey}
 EOF`);
 
+console.log("some change!");
+
 const addRemotes = () => {
   const addRemote = (app: string, index: number) => {
     try {
