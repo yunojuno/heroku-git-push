@@ -13,7 +13,9 @@ export const checkInputs = (
 ) => {
   const missingInputs = Object.entries(inputs).reduce<string[]>(
     (missing, [inputName, inputValue]) =>
-      !!inputValue || (Array.isArray(inputValue) && !!inputValue.length)
+      (typeof inputValue === "string" && !!inputValue) ||
+      typeof inputValue === "boolean" ||
+      (Array.isArray(inputValue) && !!inputValue.length)
         ? missing
         : [...missing, inputName],
     []
