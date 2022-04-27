@@ -1547,18 +1547,8 @@ var pushRemotes = (branch) => {
   const pushRemote = (app) => {
     const printMessage = printAppMessage(app);
     printMessage("Pushing branch to Heroku remote...");
-    (0, import_child_process.exec)(`git push ${app} ${branch}`, { timeout: Number(inputs.pushTimeout) }, (err, stdout, stderr) => {
-      if (stderr) {
-        (0, import_core2.error)(`An error occurred whilst pushing branch for app [${app}].`);
-        (0, import_core2.setFailed)(stderr);
-      }
-      (0, import_core2.info)(stdout);
-    });
-    const process2 = (0, import_child_process.spawn)(`git push ${app} ${branch}`);
-    process2.on("message", (message) => {
-      if (message.toString().includes("heroku")) {
-        process2.disconnect();
-      }
+    (0, import_child_process.execSync)(`git push ${app} ${branch}`, {
+      timeout: Number(inputs.pushTimeout)
     });
     printMessage("Finished pushing branch to Heroku remote");
   };

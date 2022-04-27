@@ -1,4 +1,4 @@
-import { exec, execSync, spawn } from "child_process";
+import { execSync } from "child_process";
 import {
   error,
   getInput,
@@ -61,24 +61,8 @@ const pushRemotes = (branch: string) => {
   const pushRemote = (app: string) => {
     const printMessage = printAppMessage(app);
     printMessage("Pushing branch to Heroku remote...");
-    exec(
-      `git push ${app} ${branch}`,
-      { timeout: Number(inputs.pushTimeout) },
-      (err, stdout, stderr) => {
-        if (stderr) {
-          error(`An error occurred whilst pushing branch for app [${app}].`);
-          setFailed(stderr);
-        }
-        info(stdout);
-      }
-    );
-
-    const process = spawn(`git push ${app} ${branch}`);
-
-    process.on("message", (message) => {
-      if (message.toString().includes("heroku")) {
-        process.disconnect();
-      }
+    execSync(`git push ${app} ${branch}`, {
+      timeout: Number(inputs.pushTimeout),
     });
 
     printMessage("Finished pushing branch to Heroku remote");
