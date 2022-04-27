@@ -1530,7 +1530,13 @@ var addRemotes = ({ devAppName }) => {
 var deploy = ({ devAppName }) => {
   const pushRemote = (app) => {
     (0, import_core.info)("Pushing master to heroku remote...");
-    (0, import_child_process.execSync)(`git push ${app} master`, { timeout: 1e4 });
+    const process2 = (0, import_child_process.spawn)(`git push ${app}`);
+    process2.on("message", (message) => {
+      (0, import_core.info)(message.toString());
+      if (message.toString().includes("heroku")) {
+        process2.disconnect();
+      }
+    });
     (0, import_core.info)("Finished pushing master to heroku remote");
   };
   pushRemote(devAppName);

@@ -1,4 +1,4 @@
-import { execSync, exec } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { getInput, info, setFailed } from "@actions/core";
 
 const ENV = {
@@ -40,7 +40,14 @@ const addRemotes = ({ devAppName }: Env) => {
 const deploy = ({ devAppName }: Env) => {
   const pushRemote = (app: string) => {
     info("Pushing master to heroku remote...")
-    execSync(`git push ${app} master`, { timeout: 10000 });    
+    const process = spawn(`git push ${app}`);
+
+    process.on("message", (message) => {
+      info(message.toString());
+      if (message.toString().includes("heroku")) {
+        process.disconnect();
+      }
+    });
     info("Finished pushing master to heroku remote")
   };
 
