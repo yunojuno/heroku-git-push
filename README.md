@@ -12,6 +12,8 @@ A simple GitHub Action that will push the main branch to the Heroku remote. Usin
 Create a workflow in `.github/workflows` called `main.yml`.
 
 ```yaml
+name: Heroku push
+
 on:
   push:
     branches:
