@@ -1,22 +1,31 @@
-import { execSync, exec } from 'child_process';
-import { error, getInput, getMultilineInput, info, setFailed } from "@actions/core";
+import { exec, execSync } from "child_process";
+import {
+  error,
+  getInput,
+  getMultilineInput,
+  info,
+  setFailed,
+} from "@actions/core";
 
 const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
   appNames: getMultilineInput("app_names"),
+  pushTimeout: getInput("push_timeout") || "5000",
 } as const;
 
 const checkInputs = () => {
-  const allPresent =
-    Object.values(inputs).every((value) => !!value && !!value.length)
+  const allPresent = Object.values(inputs).every(
+    (value) => !!value && !!value.length
+  );
 
   if (!allPresent) {
-    throw new Error("Missing an input variable")
+    throw new Error("Missing an input variable");
   }
-}
+};
 
-const createNetrcFile = () => execSync(`cat >~/.netrc <<EOF
+const createNetrcFile = () =>
+  execSync(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${inputs.email}
     password ${inputs.apiKey}
@@ -47,14 +56,17 @@ const addRemotes = () => {
 const pushRemotes = (branch: string) => {
   const pushRemote = (app: string, index: number) => {
     info(`[App ${index}] Pushing branch to Heroku remote...`);
-    exec(`git push ${app} ${branch}`, { timeout: 5000 }, function(err, stdout, stderr){
-      if(stderr) {
-        error(`An error occurred whilst pushing branch for app [${index}].`);
-        setFailed(stderr);
+    exec(
+      `git push ${app} ${branch}`,
+      { timeout: Number(inputs.pushTimeout) },
+      function (err, stdout, stderr) {
+        if (stderr) {
+          error(`An error occurred whilst pushing branch for app [${index}].`);
+          setFailed(stderr);
+        }
+        info(stdout);
       }
-      info(stdout);
-    });
-
+    );
 
     info(`[App ${index}] Finished pushing branch to Heroku remote`);
   };
@@ -65,13 +77,13 @@ const pushRemotes = (branch: string) => {
 const main = async () => {
   const branch = execSync("git branch --show-current").toString().trim();
 
-  if (branch !== 'master' || 'main') {
-    setFailed("Branch must be 'master' or 'main'")
+  if (branch !== "master" || "main") {
+    setFailed("Branch must be 'master' or 'main'");
   }
 
-  info("Checking all input variables are present...")
+  info("Checking all input variables are present...");
   checkInputs();
-  info("All input variables are present!")
+  info("All input variables are present!");
 
   info("Creating .netrc file...");
   createNetrcFile();
