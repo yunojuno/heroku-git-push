@@ -1547,8 +1547,13 @@ var pushRemotes = (branch) => {
   const pushRemote = (app) => {
     const printMessage = printAppMessage(app);
     printMessage("Pushing branch to Heroku remote...");
-    (0, import_child_process.execSync)(`git push ${app} ${branch}`, {
+    const proc = (0, import_child_process.spawn)(`git push ${app} ${branch}`, {
       timeout: Number(inputs.pushTimeout)
+    });
+    proc.stderr.addListener("data", (data) => {
+      if (data.toString().includes("Building source:")) {
+        proc.kill();
+      }
     });
     printMessage("Finished pushing branch to Heroku remote");
   };

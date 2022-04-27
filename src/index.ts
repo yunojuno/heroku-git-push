@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execSync, spawn } from "child_process";
 import {
   error,
   getInput,
@@ -61,8 +61,14 @@ const pushRemotes = (branch: string) => {
   const pushRemote = (app: string) => {
     const printMessage = printAppMessage(app);
     printMessage("Pushing branch to Heroku remote...");
-    execSync(`git push ${app} ${branch}`, {
+    const proc = spawn(`git push ${app} ${branch}`, {
       timeout: Number(inputs.pushTimeout),
+    });
+
+    proc.stderr.addListener("data", (data) => {
+      if (data.toString().includes("Building source:")) {
+        proc.kill();
+      }
     });
 
     printMessage("Finished pushing branch to Heroku remote");
