@@ -33,16 +33,17 @@ jobs:
         with:
           email: ${{ secrets.HEROKU_PUSH_EMAIL }}
           api_key: ${{ secrets.HEROKU_PUSH_API_KEY }}
-          app_names: 
+          app_names:
             - ${{ secrets.HEROKU_PUSH_DEV_APP_NAME }}
             - ${{ secrets.HEROKU_PUSH_UAT_APP_NAME }}
+-         timeout: 5000
 ```
 
 ## Inputs
 
 ### `email` **_REQUIRED_**
 
-The email that will be used to push code to Heroku. 
+The email that will be used to push code to Heroku.
 
 It is recommended that you store this as a [GitHub Secret](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
 
@@ -52,7 +53,12 @@ API key used to authenticate with Heroku.
 
 It is recommended that you store this as a [GitHub Secret](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
 
-
 ### `app_names` **_REQUIRED_**
 
 An array of Heroku app names that the branch should be deployed to.
+
+### `push_timeout` _OPTIONAL_
+
+The amount of time to wait before detaching from the process that pushes to Heroku. This is set to `5000ms` by default, which should be enough time in most cases for the push to finish and the build process to begin, at which point it is fine for the process to detach and let the build finish.
+
+If you find that the action completed and the build hasn't started, consider increasing this timeout to a larger value.

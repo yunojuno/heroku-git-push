@@ -6,12 +6,13 @@ import {
   info,
   setFailed,
 } from "@actions/core";
+import { printAppMessage } from "./utils";
 
 const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
   appNames: getMultilineInput("app_names"),
-  pushTimeout: getInput("push_timeout") || "5000",
+  pushTimeout: getInput("push_timeout"),
 } as const;
 
 const checkInputs = () => {
@@ -35,17 +36,18 @@ machine git.heroku.com
 EOF`);
 
 const addRemotes = () => {
-  const addRemote = (app: string, index: number) => {
+  const addRemote = (app: string) => {
+    const printMessage = printAppMessage(app);
     try {
-      info(`[App ${index}] Setting remote with Heroku CLI...`);
+      printMessage("Setting remote with Heroku CLI...");
       execSync(`heroku git:remote --app ${app}`);
-      info(`[App ${index}] Finished setting remote with Heroku CLI`);
+      printMessage("Finished setting remote with Heroku CLI");
 
-      info(`[App ${index}] Renaming remote branch...`);
+      printMessage("Renaming remote branch...");
       execSync(`git remote rename heroku ${app}`);
-      info(`[App ${index}] Finished renaming remote branch`);
+      printMessage("Finished renaming remote branch");
     } catch (e) {
-      error(`An error occurred whilst setting remote for app [${index}].`);
+      error(`An error occurred whilst setting remote for app [${app}].`);
       e instanceof Error && setFailed(e);
     }
   };
@@ -54,21 +56,22 @@ const addRemotes = () => {
 };
 
 const pushRemotes = (branch: string) => {
-  const pushRemote = (app: string, index: number) => {
-    info(`[App ${index}] Pushing branch to Heroku remote...`);
+  const pushRemote = (app: string) => {
+    const printMessage = printAppMessage(app);
+    printMessage("Pushing branch to Heroku remote...");
     exec(
       `git push ${app} ${branch}`,
       { timeout: Number(inputs.pushTimeout) },
-      function (err, stdout, stderr) {
+      (err, stdout, stderr) => {
         if (stderr) {
-          error(`An error occurred whilst pushing branch for app [${index}].`);
+          error(`An error occurred whilst pushing branch for app [${app}].`);
           setFailed(stderr);
         }
         info(stdout);
       }
     );
 
-    info(`[App ${index}] Finished pushing branch to Heroku remote`);
+    printMessage("Finished pushing branch to Heroku remote");
   };
 
   inputs.appNames.forEach(pushRemote);
