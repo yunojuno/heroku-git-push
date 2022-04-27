@@ -1,4 +1,4 @@
-import { execSync, spawn } from 'child_process';
+import { execSync, spawn } from "child_process";
 import { getInput, info, setFailed } from "@actions/core";
 
 const ENV = {
@@ -38,16 +38,49 @@ const addRemotes = ({ devAppName }: Env) => {
 };
 
 const deploy = ({ devAppName }: Env) => {
+  const processKillTriggerWords = [
+    "building source",
+    "remote",
+    "compressing source files"
+  ];
+
+  const testForKill = (str: string) => {
+      for(const triggerWord in processKillTriggerWords) {
+        if(str.includes(processKillTriggerWords[triggerWord])) {
+          return true;
+        }
+      }
+      return false;
+  };
+
   const pushRemote = (app: string) => {
     info("Pushing master to heroku remote...")
-    const process = spawn(`git push ${app}`);
+    const child_process = spawn("git", ["push", app]);
 
-    process.on("message", (message) => {
-      info(message.toString());
-      if (message.toString().includes("heroku")) {
-        process.disconnect();
-      }
+    child_process.on("spawn", () => info("Process spawned."));
+    child_process.stdout.on("data", (data: Buffer) => {
+        info(`stdout: ${data.toString()}`)
+        if(testForKill(data.toString())) {
+          child_process.kill();  
+        }
     });
+    child_process.stderr.on("data", (data: Buffer) => {
+        info(`stderr: ${data.toString()}`);
+        if(testForKill(data.toString())) {
+          child_process.kill();  
+        }
+    });
+    child_process.on("error", (error: Error) => {
+        setFailed(error);
+        child_process.kill();
+    });
+    child_process.on("close", (code: string) => {
+        console.log(`child process close all stdio with code ${code}`);
+    });
+    child_process.on("exit", (code: string) => {
+        console.log(`child process exited with code ${code}`);
+    });
+
     info("Finished pushing master to heroku remote")
   };
 

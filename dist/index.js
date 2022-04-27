@@ -1528,14 +1528,44 @@ var addRemotes = ({ devAppName }) => {
   addRemote(devAppName);
 };
 var deploy = ({ devAppName }) => {
+  const processKillTriggerWords = [
+    "building source",
+    "remote",
+    "compressing source files"
+  ];
+  const testForKill = (str) => {
+    for (const triggerWord in processKillTriggerWords) {
+      if (str.includes(processKillTriggerWords[triggerWord])) {
+        return true;
+      }
+    }
+    return false;
+  };
   const pushRemote = (app) => {
     (0, import_core.info)("Pushing master to heroku remote...");
-    const process2 = (0, import_child_process.spawn)(`git push ${app}`);
-    process2.on("message", (message) => {
-      (0, import_core.info)(message.toString());
-      if (message.toString().includes("heroku")) {
-        process2.disconnect();
+    const child_process = (0, import_child_process.spawn)("git", ["push", app]);
+    child_process.on("spawn", () => (0, import_core.info)("Process spawned."));
+    child_process.stdout.on("data", (data) => {
+      (0, import_core.info)(`stdout: ${data.toString()}`);
+      if (testForKill(data.toString())) {
+        child_process.kill();
       }
+    });
+    child_process.stderr.on("data", (data) => {
+      (0, import_core.info)(`stderr: ${data.toString()}`);
+      if (testForKill(data.toString())) {
+        child_process.kill();
+      }
+    });
+    child_process.on("error", (error) => {
+      (0, import_core.setFailed)(error);
+      child_process.kill();
+    });
+    child_process.on("close", (code) => {
+      console.log(`child process close all stdio with code ${code}`);
+    });
+    child_process.on("exit", (code) => {
+      console.log(`child process exited with code ${code}`);
     });
     (0, import_core.info)("Finished pushing master to heroku remote");
   };
