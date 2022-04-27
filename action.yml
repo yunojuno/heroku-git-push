@@ -1,0 +1,15 @@
+name: 'Heroku Git Push'
+description: 'Push YJ code to Heroku deployments'
+inputs:
+  email:
+    description: 'Email associated with Heroku for pushing'
+    required: true
+  api_key:
+    description: 'Heroku API key'
+    required: true
+  dev_app_name:
+    description: 'Name of the dev app on heroku'
+    required: true
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
