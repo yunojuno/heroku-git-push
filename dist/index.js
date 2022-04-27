@@ -1502,16 +1502,34 @@ var import_core3 = __toESM(require_core());
 
 // src/utils.ts
 init_cjs_shims();
-var import_core = __toESM(require_core());
 var import_child_process = require("child_process");
-var printAppMessage = (app) => (message) => (0, import_core.info)(`[${app}] ${message}`);
+
+// src/logging.ts
+init_cjs_shims();
+var import_core = __toESM(require_core());
+var printInfo = (message, app) => {
+  (0, import_core.info)(!!app ? formatAppMessage(message, app) : message);
+};
+var printSuccess = (message, app) => {
+  const greenMessage = `\x1B[32m${message}
+`;
+  (0, import_core.info)(!!app ? formatAppMessage(greenMessage, app) : greenMessage);
+};
+var printError = (message, app) => {
+  const redMessage = `\x1B[31m${message}`;
+  (0, import_core.error)(!!app ? formatAppMessage(redMessage, app) : redMessage);
+};
+
+// src/utils.ts
+var formatAppMessage = (message, app) => `[${app}] ${message}`;
 var checkInputs = (inputs2) => {
   const missingValues = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue && !!inputValue.length ? missing : [...missing, inputName], []);
   if (missingValues.length) {
     throw new Error(`Missing input variable(s): ${missingValues.toString()}`);
   }
 };
-var createNetrcFile = (email, apiKey) => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
+var createNetrcFile = (email, apiKey) => {
+  (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${email}
     password ${apiKey}
@@ -1519,6 +1537,8 @@ machine git.heroku.com
     login ${email}
     password ${apiKey}
 EOF`);
+  printSuccess("Created ~/.netrc");
+};
 
 // src/git.ts
 init_cjs_shims();
@@ -1526,16 +1546,13 @@ var import_child_process2 = require("child_process");
 var import_core2 = __toESM(require_core());
 var addRemotes = (appNames) => {
   const addRemote = (app) => {
-    const printMessage = printAppMessage(app);
     try {
-      printMessage("Setting remote with Heroku CLI...");
       (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`);
-      printMessage("Finished setting remote with Heroku CLI");
-      printMessage("Renaming remote branch...");
+      printSuccess("Set remote with Heroku CLI", app);
       (0, import_child_process2.execSync)(`git remote rename heroku ${app}`);
-      printMessage("Finished renaming remote branch");
+      printSuccess("Renamed remote", app);
     } catch (e) {
-      (0, import_core2.error)(`An error occurred whilst setting remote for app [${app}].`);
+      printError("An error occurred whilst setting remote", app);
       e instanceof Error && (0, import_core2.setFailed)(e);
     }
   };
@@ -1549,34 +1566,38 @@ var processKillTriggerWords = [
 var testForKill = (input) => {
   for (const triggerWord in processKillTriggerWords) {
     if (input.includes(processKillTriggerWords[triggerWord])) {
-      return true;
+      return triggerWord;
     }
   }
   return false;
 };
+var handleProcessOutput = (data, app, pushed) => {
+  printInfo(`${data.toString()}`, app);
+  const matchingWord = testForKill(data.toString());
+  if (!!matchingWord) {
+    printInfo(`Detected: "${matchingWord}`, app);
+    printInfo("Marking app as pushed", app);
+    pushed(app);
+  }
+};
 var pushRemotes = async (appNames, branch) => {
-  const pushRemote = (app) => new Promise((resolve, reject) => {
-    const printMessage = printAppMessage(app);
-    printMessage(`Pushing ${branch} to Heroku remote..`);
+  const pushRemote = (app) => new Promise((pushed, failed) => {
+    printInfo(`Pushing ${branch} to remote`, app);
     const pushProcess = (0, import_child_process2.spawn)("git", ["push", app, branch]);
-    pushProcess.stdout.on("data", (data) => {
-      if (testForKill(data.toString())) {
-        printMessage(`Finished pushing ${branch} to Heroku remote`);
-        resolve();
-      }
-    });
-    pushProcess.stderr.on("data", (data) => {
-      if (testForKill(data.toString())) {
-        printMessage(`Finished pushing ${branch} to Heroku remote`);
-        resolve();
-      }
-    });
+    pushProcess.stdout.on("data", (data) => handleProcessOutput(data, app, pushed));
+    pushProcess.stderr.on("data", (data) => handleProcessOutput(data, app, pushed));
     pushProcess.on("error", (error2) => {
       (0, import_core2.setFailed)(error2);
-      reject();
+      failed();
     });
   });
-  return await Promise.all(appNames.map(pushRemote));
+  try {
+    const pushedApps = await Promise.all(appNames.map(pushRemote));
+    printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
+  } catch (e) {
+    printError("Something went wrong pushing apps");
+    e instanceof Error && (0, import_core2.setFailed)(e);
+  }
 };
 
 // src/index.ts
@@ -1586,22 +1607,22 @@ var inputs = {
   appNames: (0, import_core3.getMultilineInput)("app_names")
 };
 var main = async () => {
+  (0, import_core3.info)("Checking branch...");
   const branch = (0, import_child_process3.execSync)("git branch --show-current").toString().trim();
   if (!["main", "master"].includes(branch)) {
     (0, import_core3.setFailed)(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
+  printSuccess(`Branch name is set to ${branch}`);
   (0, import_core3.info)("Checking all input variables are present...");
   checkInputs(inputs);
-  (0, import_core3.info)("All input variables are present!");
+  printSuccess("All inputs present");
   (0, import_core3.info)("Creating .netrc file...");
   createNetrcFile(inputs.email, inputs.apiKey);
-  (0, import_core3.info)("Finished creating .netrc file!");
-  (0, import_core3.info)("Setting remote(s)...");
+  (0, import_core3.info)("Setting remotes");
   addRemotes(inputs.appNames);
-  (0, import_core3.info)("Finished setting remote(s)!");
-  (0, import_core3.info)("Pushing to Heroku remote(s)...");
+  (0, import_core3.info)("Starting push to Heroku remotes");
   await pushRemotes(inputs.appNames, branch);
-  (0, import_core3.info)("Finished pushing to Heroku remote(s)!");
+  printSuccess("Finished pushing to Heroku remotes!");
   process.exit();
 };
 main().catch((err) => {
