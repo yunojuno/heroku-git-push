@@ -2,15 +2,6 @@ import { execSync } from "child_process";
 import { printSuccess } from "./logging";
 
 /**
- * Formats a message with app name
- *
- * @param message message to format
- * @param app app name
- */
-export const formatAppMessage = (message: string, app: string) =>
-  `[${app}] ${message}`;
-
-/**
  * Checks to see if all inputs are present.
  *
  * Throws an error containing any missing values
