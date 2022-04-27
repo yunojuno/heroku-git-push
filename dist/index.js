@@ -1513,9 +1513,9 @@ var inputs = {
   pushTimeout: (0, import_core2.getInput)("push_timeout")
 };
 var checkInputs = () => {
-  const allPresent = Object.values(inputs).every((value) => !!value && !!value.length);
-  if (!allPresent) {
-    throw new Error("Missing an input variable");
+  const missingValues = Object.entries(inputs).reduce((missing, [inputName, inputValue]) => !!inputValue && !!inputValue.length ? missing : [...missing, inputName], []);
+  if (missingValues.length) {
+    throw new Error(`Missing input variable(s): ${missingValues.toString()}`);
   }
 };
 var createNetrcFile = () => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF

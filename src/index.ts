@@ -16,12 +16,14 @@ const inputs = {
 } as const;
 
 const checkInputs = () => {
-  const allPresent = Object.values(inputs).every(
-    (value) => !!value && !!value.length
+  const missingValues = Object.entries(inputs).reduce<string[]>(
+    (missing, [inputName, inputValue]) =>
+      !!inputValue && !!inputValue.length ? missing : [...missing, inputName],
+    []
   );
 
-  if (!allPresent) {
-    throw new Error("Missing an input variable");
+  if (missingValues.length) {
+    throw new Error(`Missing input variable(s): ${missingValues.toString()}`);
   }
 };
 
