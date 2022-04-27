@@ -1526,7 +1526,7 @@ var formatAppMessage = (message, app) => `[\x1B[36m${app}] \x1B[0m${message}`;
 
 // src/utils.ts
 var checkInputs = (inputs2) => {
-  const missingInputs = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue || Array.isArray(inputValue) && !!inputValue.length ? missing : [...missing, inputName], []);
+  const missingInputs = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => inputName === "debug" && typeof inputValue === "boolean" || typeof inputValue === "string" && !!inputValue || Array.isArray(inputValue) && !!inputValue.length ? missing : [...missing, inputName], []);
   if (missingInputs.length) {
     throw new Error(`Missing input variable(s): ${missingInputs.toString()}`);
   }
