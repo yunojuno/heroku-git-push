@@ -1546,7 +1546,7 @@ var import_core2 = __toESM(require_core());
 var addRemotes = (appNames) => {
   const addRemote = (app) => {
     try {
-      (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`);
+      (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`, { stdio: "ignore" });
       (0, import_child_process2.execSync)(`git remote rename heroku ${app}`);
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {

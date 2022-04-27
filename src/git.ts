@@ -12,7 +12,7 @@ import { printError, printInfo, printSuccess } from "./logging";
 export const addRemotes = (appNames: string[]) => {
   const addRemote = (app: string) => {
     try {
-      execSync(`heroku git:remote --app ${app}`);
+      execSync(`heroku git:remote --app ${app}`, { stdio: "ignore" });
       execSync(`git remote rename heroku ${app}`);
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
