@@ -10,10 +10,6 @@ inputs:
   app_names:
     description: "Names of the apps on Heroku"
     required: true
-  push_timeout:
-    description: "Amount of time (ms) to wait for Heroku push to complete"
-    required: false
-    default: "5000"
 
 runs:
   using: "node16"
