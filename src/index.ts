@@ -57,7 +57,7 @@ const addRemotes = () => {
   inputs.appNames.forEach(addRemote);
 };
 
-const pushRemotes = (branch: string) => {
+const pushRemotes = async (branch: string) => {
   const processKillTriggerWords = [
     "building source",
     "remote",
@@ -74,41 +74,47 @@ const pushRemotes = (branch: string) => {
   };
 
   const pushRemote = (app: string) => {
-    const printMessage = printAppMessage(app);
+    return new Promise<void>((resolve) => {
+      const printMessage = printAppMessage(app);
 
-    printMessage(`Pushing ${branch} to heroku remote..`);
+      printMessage(`Pushing ${branch} to heroku remote..`);
 
-    const pushProcess = spawn("git", ["push", app]);
+      const pushProcess = spawn("git", ["push", app]);
 
-    pushProcess.stdout.on("data", (data: Buffer) => {
-      printMessage(data.toString());
-      if (testForKill(data.toString())) {
+      pushProcess.stdout.on("data", (data: Buffer) => {
+        printMessage(data.toString());
+        if (testForKill(data.toString())) {
+          pushProcess.kill();
+          resolve();
+        }
+      });
+      pushProcess.stderr.on("data", (data: Buffer) => {
+        printMessage(data.toString());
+        if (testForKill(data.toString())) {
+          pushProcess.kill();
+          resolve();
+        }
+      });
+
+      pushProcess.on("error", (error: Error) => {
+        setFailed(error);
         pushProcess.kill();
-      }
-    });
-    pushProcess.stderr.on("data", (data: Buffer) => {
-      printMessage(data.toString());
-      if (testForKill(data.toString())) {
-        pushProcess.kill();
-      }
-    });
+        resolve();
+      });
 
-    pushProcess.on("error", (error: Error) => {
-      setFailed(error);
-      pushProcess.kill();
+      pushProcess.on("close", (code: string) => {
+        printMessage(`Push process closed with code ${code}`);
+        resolve();
+      });
+      pushProcess.on("exit", (code: string) => {
+        printMessage(`Push process exited with code ${code}`);
+        printMessage(`Finished pushing ${branch} to Heroku remote`);
+        resolve();
+      });
     });
-
-    pushProcess.on("close", (code: string) => {
-      printMessage(`Push process closed with code ${code}`);
-    });
-    pushProcess.on("exit", (code: string) => {
-      printMessage(`Push process exited with code ${code}`);
-    });
-
-    printMessage("Finished pushing branch to Heroku remote");
   };
 
-  inputs.appNames.forEach(pushRemote);
+  await Promise.all(inputs.appNames.map(pushRemote));
 };
 
 const main = async () => {
@@ -131,7 +137,7 @@ const main = async () => {
   info("Finished setting remote(s)!");
 
   info("Pushing to Heroku remote(s)...");
-  pushRemotes(branch);
+  await pushRemotes(branch);
   info("Finished pushing to Heroku remote(s)!");
 };
 
