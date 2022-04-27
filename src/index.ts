@@ -88,7 +88,7 @@ const pushRemotes = (branch: string) => {
 const main = async () => {
   const branch = execSync("git branch --show-current").toString().trim();
 
-  if (branch !== "master" || "main") {
+  if (!["main", "master"].includes(branch)) {
     setFailed(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
 
