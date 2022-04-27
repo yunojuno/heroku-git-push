@@ -1,6 +1,6 @@
 import { execSync, spawn } from "child_process";
 import { info, setFailed } from "@actions/core";
-import { printError, printInfo, printSuccess } from "./logging";
+import { printError, printInfo, printLog, printSuccess } from "./logging";
 
 /**
  * Uses Heroku CLI to create a remote branch for each app.
@@ -8,11 +8,14 @@ import { printError, printInfo, printSuccess } from "./logging";
  * By default creates a branch called heroku, which we rename to the unique app name
  *
  * @param appNames unique Heroku app names
+ * @param debug show all logs
  */
-export const addRemotes = (appNames: string[]) => {
+export const addRemotes = (appNames: string[], debug: boolean) => {
   const addRemote = (app: string) => {
     try {
-      execSync(`heroku git:remote --app ${app}`, { stdio: "ignore" });
+      execSync(`heroku git:remote --app ${app}`, {
+        stdio: debug ? "inherit" : "ignore",
+      });
       execSync(`git remote rename heroku ${app}`);
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
@@ -77,24 +80,34 @@ const handleProcessOutput = (
  *
  * @param appNames unique Heroku app names
  * @param branch current branch name
+ * @param debug show all logs
  *
  * @return promise which resolves once all remotes have finished pushing
  */
-export const pushToRemotes = async (appNames: string[], branch: string) => {
+export const pushToRemotes = async (
+  appNames: string[],
+  branch: string,
+  debug: boolean
+) => {
   const pushToRemote = (app: string) =>
     new Promise<string>((pushed, failed) => {
       printInfo(`Pushing ${branch} to remote`, app);
       const pushProcess = spawn("git", ["push", app, branch]);
 
+      debug &&
+        pushProcess.stdio.forEach((io) =>
+          io?.on("data", (data) => printLog(data.toString(), app))
+        );
+
       // check stdout for kill words
-      pushProcess.stdout.on("data", (data: Buffer) =>
-        handleProcessOutput(data, app, pushed)
-      );
+      pushProcess.stdout.on("data", (data: Buffer) => {
+        handleProcessOutput(data, app, pushed);
+      });
 
       // check stderr for kill words
-      pushProcess.stderr.on("data", (data: Buffer) =>
-        handleProcessOutput(data, app, pushed)
-      );
+      pushProcess.stderr.on("data", (data: Buffer) => {
+        handleProcessOutput(data, app, pushed);
+      });
 
       // reject and set fail on error
       pushProcess.on("error", (error: Error) => {

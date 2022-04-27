@@ -8,15 +8,19 @@ import { printSuccess } from "./logging";
  *
  * @param inputs set of inputs from action input
  */
-export const checkInputs = (inputs: Record<string, string | string[]>) => {
-  const missingValues = Object.entries(inputs).reduce<string[]>(
+export const checkInputs = (
+  inputs: Record<string, string | string[] | boolean>
+) => {
+  const missingInputs = Object.entries(inputs).reduce<string[]>(
     (missing, [inputName, inputValue]) =>
-      !!inputValue && !!inputValue.length ? missing : [...missing, inputName],
+      !!inputValue || (Array.isArray(inputValue) && !!inputValue.length)
+        ? missing
+        : [...missing, inputName],
     []
   );
 
-  if (missingValues.length) {
-    throw new Error(`Missing input variable(s): ${missingValues.toString()}`);
+  if (missingInputs.length) {
+    throw new Error(`Missing input variable(s): ${missingInputs.toString()}`);
   }
 };
 

@@ -1,5 +1,11 @@
 import { execSync } from "child_process";
-import { getInput, getMultilineInput, info, setFailed } from "@actions/core";
+import {
+  getBooleanInput,
+  getInput,
+  getMultilineInput,
+  info,
+  setFailed,
+} from "@actions/core";
 import { checkInputs, createNetrcFile } from "./utils";
 import { addRemotes, pushToRemotes } from "./git";
 import { printSuccess } from "./logging";
@@ -8,6 +14,7 @@ const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
   appNames: getMultilineInput("app_names"),
+  debug: getBooleanInput("debug"),
 } as const;
 
 const main = async () => {
@@ -27,10 +34,10 @@ const main = async () => {
   createNetrcFile(inputs.email, inputs.apiKey);
 
   info("Setting remotes");
-  addRemotes(inputs.appNames);
+  addRemotes(inputs.appNames, inputs.debug);
 
   info("Starting push to Heroku remotes");
-  await pushToRemotes(inputs.appNames, branch);
+  await pushToRemotes(inputs.appNames, branch, inputs.debug);
   printSuccess("All done!");
   process.exit();
 };

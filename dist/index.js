@@ -1403,7 +1403,7 @@ var require_core = __commonJS({
       return inputs2;
     }
     exports.getMultilineInput = getMultilineInput2;
-    function getBooleanInput(name, options) {
+    function getBooleanInput2(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
       const val = getInput2(name, options);
@@ -1414,7 +1414,7 @@ var require_core = __commonJS({
       throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
-    exports.getBooleanInput = getBooleanInput;
+    exports.getBooleanInput = getBooleanInput2;
     function setOutput(name, value) {
       process.stdout.write(os.EOL);
       command_1.issueCommand("set-output", { name }, value);
@@ -1518,13 +1518,17 @@ var printError = (message, app) => {
   const redMessage = `\x1B[31m${message}`;
   (0, import_core.error)(!!app ? formatAppMessage(redMessage, app) : redMessage);
 };
+var printLog = (message, app) => {
+  const yellowMessage = `\x1B[33m${message}`;
+  (0, import_core.info)(!!app ? formatAppMessage(yellowMessage, app) : yellowMessage);
+};
 var formatAppMessage = (message, app) => `[\x1B[36m${app}] \x1B[0m${message}`;
 
 // src/utils.ts
 var checkInputs = (inputs2) => {
-  const missingValues = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue && !!inputValue.length ? missing : [...missing, inputName], []);
-  if (missingValues.length) {
-    throw new Error(`Missing input variable(s): ${missingValues.toString()}`);
+  const missingInputs = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue || Array.isArray(inputValue) && !!inputValue.length ? missing : [...missing, inputName], []);
+  if (missingInputs.length) {
+    throw new Error(`Missing input variable(s): ${missingInputs.toString()}`);
   }
 };
 var createNetrcFile = (email, apiKey) => {
@@ -1543,10 +1547,12 @@ EOF`);
 init_cjs_shims();
 var import_child_process2 = require("child_process");
 var import_core2 = __toESM(require_core());
-var addRemotes = (appNames) => {
+var addRemotes = (appNames, debug) => {
   const addRemote = (app) => {
     try {
-      (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`, { stdio: "ignore" });
+      (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`, {
+        stdio: debug ? "inherit" : "ignore"
+      });
       (0, import_child_process2.execSync)(`git remote rename heroku ${app}`);
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
@@ -1578,12 +1584,17 @@ var handleProcessOutput = (data, app, pushed) => {
     pushed(app);
   }
 };
-var pushToRemotes = async (appNames, branch) => {
+var pushToRemotes = async (appNames, branch, debug) => {
   const pushToRemote = (app) => new Promise((pushed, failed) => {
     printInfo(`Pushing ${branch} to remote`, app);
     const pushProcess = (0, import_child_process2.spawn)("git", ["push", app, branch]);
-    pushProcess.stdout.on("data", (data) => handleProcessOutput(data, app, pushed));
-    pushProcess.stderr.on("data", (data) => handleProcessOutput(data, app, pushed));
+    debug && pushProcess.stdio.forEach((io) => io == null ? void 0 : io.on("data", (data) => printLog(data.toString(), app)));
+    pushProcess.stdout.on("data", (data) => {
+      handleProcessOutput(data, app, pushed);
+    });
+    pushProcess.stderr.on("data", (data) => {
+      handleProcessOutput(data, app, pushed);
+    });
     pushProcess.on("error", (error2) => {
       (0, import_core2.setFailed)(error2);
       failed();
@@ -1603,7 +1614,8 @@ var pushToRemotes = async (appNames, branch) => {
 var inputs = {
   email: (0, import_core3.getInput)("email"),
   apiKey: (0, import_core3.getInput)("api_key"),
-  appNames: (0, import_core3.getMultilineInput)("app_names")
+  appNames: (0, import_core3.getMultilineInput)("app_names"),
+  debug: (0, import_core3.getBooleanInput)("debug")
 };
 var main = async () => {
   (0, import_core3.info)("Checking branch...");
@@ -1619,9 +1631,9 @@ var main = async () => {
   (0, import_core3.info)("Creating .netrc file...");
   createNetrcFile(inputs.email, inputs.apiKey);
   (0, import_core3.info)("Setting remotes");
-  addRemotes(inputs.appNames);
+  addRemotes(inputs.appNames, inputs.debug);
   (0, import_core3.info)("Starting push to Heroku remotes");
-  await pushToRemotes(inputs.appNames, branch);
+  await pushToRemotes(inputs.appNames, branch, inputs.debug);
   printSuccess("All done!");
   process.exit();
 };

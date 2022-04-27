@@ -35,6 +35,17 @@ export const printError = (message: string, app?: string) => {
 };
 
 /**
+ * Prints a yellow log message
+ *
+ * @param message log message
+ * @param app app name for log format
+ */
+export const printLog = (message: string, app?: string) => {
+  const yellowMessage = `\u001b[33m${message}`;
+  info(!!app ? formatAppMessage(yellowMessage, app) : yellowMessage);
+};
+
+/**
  * Formats a message with app name
  *
  * @param message message to format

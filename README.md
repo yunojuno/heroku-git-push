@@ -55,3 +55,7 @@ It is recommended that you store this as a [GitHub Secret](https://docs.github.c
 ### `app_names` **_REQUIRED_**
 
 An array of Heroku app names that the branch should be deployed to.
+
+### `debug` _OPTIONAL_
+
+Prints extra logs from Heroku CLI and git commands, which should help in cases where things aren't working and the error messages don't help.
