@@ -44,7 +44,7 @@ The email that will be used to push code to Heroku.
 
 It is recommended that you store this as a [GitHub Secret](https://docs.github.com/en/actions/security-guides/encrypted-secrets).
 
-### `api_Key` **_REQUIRED_**
+### `api_key` **_REQUIRED_**
 
 API key used to authenticate with Heroku.
 
