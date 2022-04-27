@@ -22,6 +22,8 @@ export const checkInputs = (
   if (missingInputs.length) {
     throw new Error(`Missing input variable(s): ${missingInputs.toString()}`);
   }
+
+  printSuccess("All inputs present\n");
 };
 
 /**

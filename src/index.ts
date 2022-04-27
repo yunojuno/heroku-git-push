@@ -1,11 +1,5 @@
 import { execSync } from "child_process";
-import {
-  getBooleanInput,
-  getInput,
-  getMultilineInput,
-  info,
-  setFailed,
-} from "@actions/core";
+import { getInput, getMultilineInput, info, setFailed } from "@actions/core";
 import { checkInputs, createNetrcFile } from "./utils";
 import { addRemotes, pushToRemotes } from "./git";
 import { printSuccess } from "./logging";
@@ -14,7 +8,7 @@ const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
   appNames: getMultilineInput("app_names"),
-  debug: getBooleanInput("debug"),
+  debug: getInput("debug").toLowerCase() === "true",
 } as const;
 
 const main = async () => {
@@ -28,7 +22,6 @@ const main = async () => {
 
   info("Checking all input variables are present...");
   checkInputs(inputs);
-  printSuccess("All inputs present\n");
 
   info("Creating .netrc file...");
   createNetrcFile(inputs.email, inputs.apiKey);

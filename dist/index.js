@@ -1403,7 +1403,7 @@ var require_core = __commonJS({
       return inputs2;
     }
     exports.getMultilineInput = getMultilineInput2;
-    function getBooleanInput2(name, options) {
+    function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
       const val = getInput2(name, options);
@@ -1414,7 +1414,7 @@ var require_core = __commonJS({
       throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
-    exports.getBooleanInput = getBooleanInput2;
+    exports.getBooleanInput = getBooleanInput;
     function setOutput(name, value) {
       process.stdout.write(os.EOL);
       command_1.issueCommand("set-output", { name }, value);
@@ -1530,6 +1530,7 @@ var checkInputs = (inputs2) => {
   if (missingInputs.length) {
     throw new Error(`Missing input variable(s): ${missingInputs.toString()}`);
   }
+  printSuccess("All inputs present\n");
 };
 var createNetrcFile = (email, apiKey) => {
   (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
@@ -1615,7 +1616,7 @@ var inputs = {
   email: (0, import_core3.getInput)("email"),
   apiKey: (0, import_core3.getInput)("api_key"),
   appNames: (0, import_core3.getMultilineInput)("app_names"),
-  debug: (0, import_core3.getBooleanInput)("debug")
+  debug: (0, import_core3.getInput)("debug").toLowerCase() === "true"
 };
 var main = async () => {
   (0, import_core3.info)("Checking branch...");
@@ -1627,7 +1628,6 @@ var main = async () => {
 `);
   (0, import_core3.info)("Checking all input variables are present...");
   checkInputs(inputs);
-  printSuccess("All inputs present\n");
   (0, import_core3.info)("Creating .netrc file...");
   createNetrcFile(inputs.email, inputs.apiKey);
   (0, import_core3.info)("Setting remotes");
