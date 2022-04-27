@@ -1563,18 +1563,17 @@ var processKillTriggerWords = [
   "compressing source files"
 ];
 var testForKill = (input) => {
-  for (const triggerWord in processKillTriggerWords) {
-    if (input.includes(triggerWord)) {
-      return triggerWord;
+  for (const wordIndex in processKillTriggerWords) {
+    if (input.includes(processKillTriggerWords[wordIndex])) {
+      return processKillTriggerWords[wordIndex];
     }
   }
   return false;
 };
 var handleProcessOutput = (data, app, pushed) => {
-  printInfo(`${data.toString()}`, app);
   const matchingWord = testForKill(data.toString());
   if (!!matchingWord) {
-    printInfo(`Detected: "${matchingWord}`, app);
+    printInfo(`Detected: "${matchingWord}"`, app);
     printSuccess("Marking app as pushed", app);
     pushed(app);
   }

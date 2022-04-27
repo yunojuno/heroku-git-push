@@ -43,25 +43,30 @@ const processKillTriggerWords = [
  * @param input string input from stdio
  */
 export const testForKill = (input: string) => {
-  for (const triggerWord in processKillTriggerWords) {
-    if (input.includes(triggerWord)) {
-      return triggerWord;
+  for (const wordIndex in processKillTriggerWords) {
+    if (input.includes(processKillTriggerWords[wordIndex])) {
+      return processKillTriggerWords[wordIndex];
     }
   }
   return false;
 };
 
+/**
+ * Handler which takes the process output and resolves if matched word is found.
+ *
+ * @param data process data
+ * @param app app name
+ * @param pushed app promise callback
+ */
 const handleProcessOutput = (
   data: Buffer,
   app: string,
   pushed: (app: string) => void
 ) => {
-  printInfo(`${data.toString()}`, app);
-
   const matchingWord = testForKill(data.toString());
 
   if (!!matchingWord) {
-    printInfo(`Detected: "${matchingWord}`, app);
+    printInfo(`Detected: "${matchingWord}"`, app);
     printSuccess("Marking app as pushed", app);
     pushed(app);
   }
