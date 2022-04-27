@@ -1518,9 +1518,9 @@ var printError = (message, app) => {
   const redMessage = `\x1B[31m${message}`;
   (0, import_core.error)(!!app ? formatAppMessage(redMessage, app) : redMessage);
 };
+var formatAppMessage = (message, app) => `[\x1B[36m${app}] \x1B[0m${message}`;
 
 // src/utils.ts
-var formatAppMessage = (message, app) => `[${app}] ${message}`;
 var checkInputs = (inputs2) => {
   const missingValues = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue && !!inputValue.length ? missing : [...missing, inputName], []);
   if (missingValues.length) {
@@ -1555,7 +1555,7 @@ var addRemotes = (appNames) => {
     }
   };
   appNames.forEach(addRemote);
-  (0, import_core2.info)("\n");
+  (0, import_core2.info)("");
 };
 var processKillTriggerWords = [
   "building source",
@@ -1592,7 +1592,7 @@ var pushToRemotes = async (appNames, branch) => {
   try {
     const pushedApps = await Promise.all(appNames.map(pushToRemote));
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
-    (0, import_core2.info)("\n");
+    (0, import_core2.info)("");
   } catch (e) {
     printError("Something went wrong pushing apps");
     e instanceof Error && (0, import_core2.setFailed)(e);
