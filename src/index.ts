@@ -40,14 +40,7 @@ const addRemotes = ({ devAppName }: Env) => {
 const deploy = ({ devAppName }: Env) => {
   const pushRemote = (app: string) => {
     info("Pushing master to heroku remote...")
-    exec(`git push ${app} master`, { timeout: 5000 }, function(error, stdout, stderr){
-      if(stderr) {
-        setFailed(stderr);
-      }
-      info(stdout);
-    });
-
-    
+    execSync(`git push ${app} master`, { timeout: 10000 });    
     info("Finished pushing master to heroku remote")
   };
 
