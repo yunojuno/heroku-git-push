@@ -80,7 +80,8 @@ const pushRemotes = async (branch: string) => {
 
       printMessage(`Pushing ${branch} to Heroku remote..`);
 
-      const pushProcess = spawn("git", ["push", app]);
+      const pushProcess = spawn("git", ["push", app], { detached: true });
+      pushProcess.unref();
       pidStack.push(`${pushProcess.pid}`);
       pushProcess.stdout.on("data", (data: Buffer) => {
         printMessage(data.toString());

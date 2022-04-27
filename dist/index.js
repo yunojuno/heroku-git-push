@@ -1562,7 +1562,8 @@ var pushRemotes = async (branch) => {
     return new Promise((resolve) => {
       const printMessage = printAppMessage(app);
       printMessage(`Pushing ${branch} to Heroku remote..`);
-      const pushProcess = (0, import_child_process.spawn)("git", ["push", app]);
+      const pushProcess = (0, import_child_process.spawn)("git", ["push", app], { detached: true });
+      pushProcess.unref();
       pidStack.push(`${pushProcess.pid}`);
       pushProcess.stdout.on("data", (data) => {
         printMessage(data.toString());
