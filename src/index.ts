@@ -58,7 +58,6 @@ const addRemotes = () => {
 };
 
 const pushRemotes = async (branch: string) => {
-  const pidStack: string[] = [];
   const processKillTriggerWords = [
     "building source",
     "remote",
@@ -81,8 +80,7 @@ const pushRemotes = async (branch: string) => {
       printMessage(`Pushing ${branch} to Heroku remote..`);
 
       const pushProcess = spawn("git", ["push", app], { detached: true });
-      pushProcess.unref();
-      pidStack.push(`${pushProcess.pid}`);
+
       pushProcess.stdout.on("data", (data: Buffer) => {
         printMessage(data.toString());
         if (testForKill(data.toString())) {
@@ -104,13 +102,13 @@ const pushRemotes = async (branch: string) => {
       pushProcess.on("exit", (code: string) => {
         printMessage(`Push process exited with code ${code}`);
         printMessage(`Finished pushing ${branch} to Heroku remote`);
+        resolve();
       });
     });
   };
 
   await Promise.all(inputs.appNames.map(pushRemote));
-  info(pidStack.toString());
-  pidStack.forEach((pid) => execSync(`kill -9 ${pid}`));
+  process.exit();
 };
 
 const main = async () => {
