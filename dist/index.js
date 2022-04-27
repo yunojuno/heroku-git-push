@@ -1566,7 +1566,7 @@ var pushRemotes = (branch) => {
 };
 var main = async () => {
   const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();
-  if (branch !== "master" || "main") {
+  if (!["main", "master"].includes(branch)) {
     (0, import_core2.setFailed)(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
   (0, import_core2.info)("Checking all input variables are present...");
