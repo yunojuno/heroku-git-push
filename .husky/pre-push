@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+yarn build
+
+if [[ $(git status --porcelain | grep " dist/index.js") ]]
+then
+  echo "Please commit changes to dist/index.js before pushing!"
+  exit 1
+fi

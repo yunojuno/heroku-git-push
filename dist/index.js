@@ -399,18 +399,18 @@ var require_tunnel = __commonJS({
         if (res.statusCode !== 200) {
           debug("tunneling socket could not be established, statusCode=%d", res.statusCode);
           socket.destroy();
-          var error = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self.removeSocket(placeholder);
           return;
         }
         if (head.length > 0) {
           debug("got illegal response body from proxy");
           socket.destroy();
-          var error = new Error("got illegal response body from proxy");
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("got illegal response body from proxy");
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self.removeSocket(placeholder);
           return;
         }
@@ -421,9 +421,9 @@ var require_tunnel = __commonJS({
       function onError(cause) {
         connectReq.removeAllListeners();
         debug("tunneling socket could not be established, cause=%s\n", cause.message, cause.stack);
-        var error = new Error("tunneling socket could not be established, cause=" + cause.message);
-        error.code = "ECONNRESET";
-        options.request.emit("error", error);
+        var error2 = new Error("tunneling socket could not be established, cause=" + cause.message);
+        error2.code = "ECONNRESET";
+        options.request.emit("error", error2);
         self.removeSocket(placeholder);
       }
     };
@@ -698,12 +698,12 @@ var require_http_client = __commonJS({
           throw new Error("Client has already been disposed.");
         }
         let parsedUrl = new URL(requestUrl);
-        let info2 = this._prepareRequest(verb, parsedUrl, headers);
+        let info3 = this._prepareRequest(verb, parsedUrl, headers);
         let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1 ? this._maxRetries + 1 : 1;
         let numTries = 0;
         let response;
         while (numTries < maxTries) {
-          response = await this.requestRaw(info2, data);
+          response = await this.requestRaw(info3, data);
           if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
             let authenticationHandler;
             for (let i = 0; i < this.handlers.length; i++) {
@@ -713,7 +713,7 @@ var require_http_client = __commonJS({
               }
             }
             if (authenticationHandler) {
-              return authenticationHandler.handleAuthentication(this, info2, data);
+              return authenticationHandler.handleAuthentication(this, info3, data);
             } else {
               return response;
             }
@@ -736,8 +736,8 @@ var require_http_client = __commonJS({
                 }
               }
             }
-            info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-            response = await this.requestRaw(info2, data);
+            info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+            response = await this.requestRaw(info3, data);
             redirectsRemaining--;
           }
           if (HttpResponseRetryCodes.indexOf(response.message.statusCode) == -1) {
@@ -757,7 +757,7 @@ var require_http_client = __commonJS({
         }
         this._disposed = true;
       }
-      requestRaw(info2, data) {
+      requestRaw(info3, data) {
         return new Promise((resolve, reject) => {
           let callbackForResult = function(err, res) {
             if (err) {
@@ -765,13 +765,13 @@ var require_http_client = __commonJS({
             }
             resolve(res);
           };
-          this.requestRawWithCallback(info2, data, callbackForResult);
+          this.requestRawWithCallback(info3, data, callbackForResult);
         });
       }
-      requestRawWithCallback(info2, data, onResult) {
+      requestRawWithCallback(info3, data, onResult) {
         let socket;
         if (typeof data === "string") {
-          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         let handleResult = (err, res) => {
@@ -780,7 +780,7 @@ var require_http_client = __commonJS({
             onResult(err, res);
           }
         };
-        let req = info2.httpModule.request(info2.options, (msg) => {
+        let req = info3.httpModule.request(info3.options, (msg) => {
           let res = new HttpClientResponse(msg);
           handleResult(null, res);
         });
@@ -791,7 +791,7 @@ var require_http_client = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error("Request timeout: " + info2.options.path), null);
+          handleResult(new Error("Request timeout: " + info3.options.path), null);
         });
         req.on("error", function(err) {
           handleResult(err, null);
@@ -813,27 +813,27 @@ var require_http_client = __commonJS({
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info2 = {};
-        info2.parsedUrl = requestUrl;
-        const usingSsl = info2.parsedUrl.protocol === "https:";
-        info2.httpModule = usingSsl ? https : http;
+        const info3 = {};
+        info3.parsedUrl = requestUrl;
+        const usingSsl = info3.parsedUrl.protocol === "https:";
+        info3.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info2.options = {};
-        info2.options.host = info2.parsedUrl.hostname;
-        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
-        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
-        info2.options.method = method;
-        info2.options.headers = this._mergeHeaders(headers);
+        info3.options = {};
+        info3.options.host = info3.parsedUrl.hostname;
+        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
+        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
+        info3.options.method = method;
+        info3.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info2.options.headers["user-agent"] = this.userAgent;
+          info3.options.headers["user-agent"] = this.userAgent;
         }
-        info2.options.agent = this._getAgent(info2.parsedUrl);
+        info3.options.agent = this._getAgent(info3.parsedUrl);
         if (this.handlers) {
           this.handlers.forEach((handler) => {
-            handler.prepareRequest(info2.options);
+            handler.prepareRequest(info3.options);
           });
         }
-        return info2;
+        return info3;
       }
       _mergeHeaders(headers) {
         const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => (c[k.toLowerCase()] = obj[k], c), {});
@@ -1087,12 +1087,12 @@ var require_oidc_utils = __commonJS({
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
           const httpclient = OidcClient.createHttpClient();
-          const res = yield httpclient.getJson(id_token_url).catch((error) => {
+          const res = yield httpclient.getJson(id_token_url).catch((error2) => {
             throw new Error(`Failed to get ID Token. 
  
-        Error Code : ${error.statusCode}
+        Error Code : ${error2.statusCode}
  
-        Error Message: ${error.result.message}`);
+        Error Message: ${error2.result.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
           if (!id_token) {
@@ -1113,8 +1113,8 @@ var require_oidc_utils = __commonJS({
             const id_token = yield OidcClient.getCall(id_token_url);
             core_1.setSecret(id_token);
             return id_token;
-          } catch (error) {
-            throw new Error(`Error message: ${error.message}`);
+          } catch (error2) {
+            throw new Error(`Error message: ${error2.message}`);
           }
         });
       }
@@ -1398,11 +1398,11 @@ var require_core = __commonJS({
       return val.trim();
     }
     exports.getInput = getInput2;
-    function getMultilineInput(name, options) {
-      const inputs = getInput2(name, options).split("\n").filter((x) => x !== "");
-      return inputs;
+    function getMultilineInput2(name, options) {
+      const inputs2 = getInput2(name, options).split("\n").filter((x) => x !== "");
+      return inputs2;
     }
-    exports.getMultilineInput = getMultilineInput;
+    exports.getMultilineInput = getMultilineInput2;
     function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
@@ -1424,11 +1424,11 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issue("echo", enabled ? "on" : "off");
     }
     exports.setCommandEcho = setCommandEcho;
-    function setFailed2(message) {
+    function setFailed3(message) {
       process.exitCode = ExitCode.Failure;
-      error(message);
+      error2(message);
     }
-    exports.setFailed = setFailed2;
+    exports.setFailed = setFailed3;
     function isDebug() {
       return process.env["RUNNER_DEBUG"] === "1";
     }
@@ -1437,10 +1437,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("debug", {}, message);
     }
     exports.debug = debug;
-    function error(message, properties = {}) {
+    function error2(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.error = error;
+    exports.error = error2;
     function warning(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -1449,10 +1449,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info2(message) {
+    function info3(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info2;
+    exports.info = info3;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -1497,14 +1497,21 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 
 // src/index.ts
 init_cjs_shims();
-var import_child_process = require("child_process");
+var import_child_process3 = require("child_process");
+var import_core3 = __toESM(require_core());
+
+// src/utils.ts
+init_cjs_shims();
 var import_core = __toESM(require_core());
-var ENV = {
-  email: (0, import_core.getInput)("email"),
-  apiKey: (0, import_core.getInput)("api_key"),
-  devAppName: (0, import_core.getInput)("dev_app_name")
+var import_child_process = require("child_process");
+var printAppMessage = (app) => (message) => (0, import_core.info)(`[${app}] ${message}`);
+var checkInputs = (inputs2) => {
+  const missingValues = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue && !!inputValue.length ? missing : [...missing, inputName], []);
+  if (missingValues.length) {
+    throw new Error(`Missing input variable(s): ${missingValues.toString()}`);
+  }
 };
-var createNetrcFile = ({ email, apiKey }) => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
+var createNetrcFile = (email, apiKey) => (0, import_child_process.execSync)(`cat >~/.netrc <<EOF
 machine api.heroku.com
     login ${email}
     password ${apiKey}
@@ -1512,83 +1519,91 @@ machine git.heroku.com
     login ${email}
     password ${apiKey}
 EOF`);
-var addRemotes = ({ devAppName }) => {
+
+// src/git.ts
+init_cjs_shims();
+var import_child_process2 = require("child_process");
+var import_core2 = __toESM(require_core());
+var addRemotes = (appNames) => {
   const addRemote = (app) => {
+    const printMessage = printAppMessage(app);
     try {
-      (0, import_core.info)("Setting remote with Heroku CLI...");
-      (0, import_child_process.execSync)(`heroku git:remote --app ${app}`);
-      (0, import_core.info)("Finished setting remote with Heroku CLI");
-      (0, import_core.info)("Renaming remote branch...");
-      (0, import_child_process.execSync)(`git remote rename heroku ${app}`);
-      (0, import_core.info)("Finished renaming remote branch");
+      printMessage("Setting remote with Heroku CLI...");
+      (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`);
+      printMessage("Finished setting remote with Heroku CLI");
+      printMessage("Renaming remote branch...");
+      (0, import_child_process2.execSync)(`git remote rename heroku ${app}`);
+      printMessage("Finished renaming remote branch");
     } catch (e) {
-      (0, import_core.setFailed)(e.message);
+      (0, import_core2.error)(`An error occurred whilst setting remote for app [${app}].`);
+      e instanceof Error && (0, import_core2.setFailed)(e);
     }
   };
-  addRemote(devAppName);
+  appNames.forEach(addRemote);
 };
-var deploy = ({ devAppName }) => {
-  const processKillTriggerWords = [
-    "building source",
-    "remote",
-    "compressing source files"
-  ];
-  const testForKill = (str) => {
-    for (const triggerWord in processKillTriggerWords) {
-      if (str.includes(processKillTriggerWords[triggerWord])) {
-        return true;
-      }
+var processKillTriggerWords = [
+  "building source",
+  "remote",
+  "compressing source files"
+];
+var testForKill = (input) => {
+  for (const triggerWord in processKillTriggerWords) {
+    if (input.includes(processKillTriggerWords[triggerWord])) {
+      return true;
     }
-    return false;
-  };
-  const pushRemote = (app) => {
-    (0, import_core.info)("Pushing master to heroku remote...");
-    const child_process = (0, import_child_process.spawn)("git", ["push", app]);
-    child_process.on("spawn", () => (0, import_core.info)("Process spawned."));
-    child_process.stdout.on("data", (data) => {
-      (0, import_core.info)(`stdout: ${data.toString()}`);
+  }
+  return false;
+};
+var pushRemotes = async (appNames, branch) => {
+  const pushRemote = (app) => new Promise((resolve, reject) => {
+    const printMessage = printAppMessage(app);
+    printMessage(`Pushing ${branch} to Heroku remote..`);
+    const pushProcess = (0, import_child_process2.spawn)("git", ["push", app, branch]);
+    pushProcess.stdout.on("data", (data) => {
       if (testForKill(data.toString())) {
-        child_process.kill();
+        printMessage(`Finished pushing ${branch} to Heroku remote`);
+        resolve();
       }
     });
-    child_process.stderr.on("data", (data) => {
-      (0, import_core.info)(`stderr: ${data.toString()}`);
+    pushProcess.stderr.on("data", (data) => {
       if (testForKill(data.toString())) {
-        child_process.kill();
+        printMessage(`Finished pushing ${branch} to Heroku remote`);
+        resolve();
       }
     });
-    child_process.on("error", (error) => {
-      (0, import_core.setFailed)(error);
-      child_process.kill();
+    pushProcess.on("error", (error2) => {
+      (0, import_core2.setFailed)(error2);
+      reject();
     });
-    child_process.on("close", (code) => {
-      console.log(`child process close all stdio with code ${code}`);
-    });
-    child_process.on("exit", (code) => {
-      console.log(`child process exited with code ${code}`);
-    });
-    (0, import_core.info)("Finished pushing master to heroku remote");
-  };
-  pushRemote(devAppName);
+  });
+  return await Promise.all(appNames.map(pushRemote));
+};
+
+// src/index.ts
+var inputs = {
+  email: (0, import_core3.getInput)("email"),
+  apiKey: (0, import_core3.getInput)("api_key"),
+  appNames: (0, import_core3.getMultilineInput)("app_names")
 };
 var main = async () => {
-  (0, import_core.info)("Setting git config...");
-  (0, import_child_process.execSync)(`git config user.name "YJ CI"`);
-  (0, import_child_process.execSync)(`git config user.email ${ENV.email}`);
-  (0, import_core.info)("Finished setting git config");
-  const hasUncommittedChanges = !!(0, import_child_process.execSync)("git status --porcelain").toString().trim();
-  if (hasUncommittedChanges) {
-    (0, import_core.setFailed)("Branch has uncommitted changes - aborting...");
-    return;
+  const branch = (0, import_child_process3.execSync)("git branch --show-current").toString().trim();
+  if (!["main", "master"].includes(branch)) {
+    (0, import_core3.setFailed)(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
-  (0, import_core.info)("Creating .netrc file...");
-  createNetrcFile(ENV);
-  (0, import_core.info)("Finished creating .netrc file");
-  (0, import_core.info)("Setting remotes...");
-  addRemotes(ENV);
-  (0, import_core.info)("Finished setting remotes");
-  (0, import_core.info)("Deploying...");
-  deploy(ENV);
-  (0, import_core.info)("Finished deploying");
+  (0, import_core3.info)("Checking all input variables are present...");
+  checkInputs(inputs);
+  (0, import_core3.info)("All input variables are present!");
+  (0, import_core3.info)("Creating .netrc file...");
+  createNetrcFile(inputs.email, inputs.apiKey);
+  (0, import_core3.info)("Finished creating .netrc file!");
+  (0, import_core3.info)("Setting remote(s)...");
+  addRemotes(inputs.appNames);
+  (0, import_core3.info)("Finished setting remote(s)!");
+  (0, import_core3.info)("Pushing to Heroku remote(s)...");
+  await pushRemotes(inputs.appNames, branch);
+  (0, import_core3.info)("Finished pushing to Heroku remote(s)!");
+  process.exit();
 };
-main().catch(console.error);
+main().catch((err) => {
+  (0, import_core3.setFailed)(err);
+});
