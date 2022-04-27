@@ -65,7 +65,7 @@ const pushRemotes = (branch: string) => {
 
     proc.stderr.addListener("data", (data) => {
       if (data.toString().includes("Building source:")) {
-        proc.kill();
+        proc.disconnect();
       }
     });
 

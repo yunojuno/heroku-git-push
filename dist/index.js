@@ -1550,7 +1550,7 @@ var pushRemotes = (branch) => {
     const proc = (0, import_child_process.spawn)(`git push ${app} ${branch}`);
     proc.stderr.addListener("data", (data) => {
       if (data.toString().includes("Building source:")) {
-        proc.kill();
+        proc.disconnect();
       }
     });
     printMessage("Finished pushing branch to Heroku remote");
