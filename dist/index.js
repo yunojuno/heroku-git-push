@@ -1560,7 +1560,7 @@ var pushRemotes = async (branch) => {
   const pushRemote = (app) => {
     return new Promise((resolve) => {
       const printMessage = printAppMessage(app);
-      printMessage(`Pushing ${branch} to heroku remote..`);
+      printMessage(`Pushing ${branch} to Heroku remote..`);
       const pushProcess = (0, import_child_process.spawn)("git", ["push", app]);
       pushProcess.stdout.on("data", (data) => {
         printMessage(data.toString());
@@ -1573,19 +1573,23 @@ var pushRemotes = async (branch) => {
         printMessage(data.toString());
         if (testForKill(data.toString())) {
           pushProcess.kill();
+          pushProcess.disconnect();
           resolve();
         }
       });
       pushProcess.on("error", (error2) => {
         (0, import_core2.setFailed)(error2);
         pushProcess.kill();
+        pushProcess.disconnect();
         resolve();
       });
       pushProcess.on("close", (code) => {
         printMessage(`Push process closed with code ${code}`);
+        pushProcess.disconnect();
         resolve();
       });
       pushProcess.on("exit", (code) => {
+        pushProcess.disconnect();
         printMessage(`Push process exited with code ${code}`);
         printMessage(`Finished pushing ${branch} to Heroku remote`);
         resolve();
