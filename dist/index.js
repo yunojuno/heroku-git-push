@@ -1554,6 +1554,12 @@ var pushRemotes = (branch) => {
       }
       (0, import_core2.info)(stdout);
     });
+    const process2 = (0, import_child_process.spawn)(`git push ${app} ${branch}`);
+    process2.on("message", (message) => {
+      if (message.toString().includes("heroku")) {
+        process2.disconnect();
+      }
+    });
     printMessage("Finished pushing branch to Heroku remote");
   };
   inputs.appNames.forEach(pushRemote);
@@ -1561,7 +1567,7 @@ var pushRemotes = (branch) => {
 var main = async () => {
   const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();
   if (branch !== "master" || "main") {
-    (0, import_core2.setFailed)("Branch must be 'master' or 'main'");
+    (0, import_core2.setFailed)(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
   (0, import_core2.info)("Checking all input variables are present...");
   checkInputs();
