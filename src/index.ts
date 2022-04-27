@@ -58,15 +58,51 @@ const addRemotes = () => {
 };
 
 const pushRemotes = (branch: string) => {
+  const processKillTriggerWords = [
+    "building source",
+    "remote",
+    "compressing source files",
+  ];
+
+  const testForKill = (str: string) => {
+    for (const triggerWord in processKillTriggerWords) {
+      if (str.includes(processKillTriggerWords[triggerWord])) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const pushRemote = (app: string) => {
     const printMessage = printAppMessage(app);
-    printMessage("Pushing branch to Heroku remote...");
-    const proc = spawn(`git push ${app} ${branch}`);
 
-    proc.stderr.addListener("data", (data) => {
-      if (data.toString().includes("Building source:")) {
-        proc.disconnect();
+    printMessage(`Pushing ${branch} to heroku remote..`);
+
+    const pushProcess = spawn("git", ["push", app]);
+
+    pushProcess.stdout.on("data", (data: Buffer) => {
+      printMessage(data.toString());
+      if (testForKill(data.toString())) {
+        pushProcess.kill();
       }
+    });
+    pushProcess.stderr.on("data", (data: Buffer) => {
+      printMessage(data.toString());
+      if (testForKill(data.toString())) {
+        pushProcess.kill();
+      }
+    });
+
+    pushProcess.on("error", (error: Error) => {
+      setFailed(error);
+      pushProcess.kill();
+    });
+
+    pushProcess.on("close", (code: string) => {
+      printMessage(`Push process closed with code ${code}`);
+    });
+    pushProcess.on("exit", (code: string) => {
+      printMessage(`Push process exited with code ${code}`);
     });
 
     printMessage("Finished pushing branch to Heroku remote");
