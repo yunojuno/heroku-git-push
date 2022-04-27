@@ -698,12 +698,12 @@ var require_http_client = __commonJS({
           throw new Error("Client has already been disposed.");
         }
         let parsedUrl = new URL(requestUrl);
-        let info2 = this._prepareRequest(verb, parsedUrl, headers);
+        let info3 = this._prepareRequest(verb, parsedUrl, headers);
         let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1 ? this._maxRetries + 1 : 1;
         let numTries = 0;
         let response;
         while (numTries < maxTries) {
-          response = await this.requestRaw(info2, data);
+          response = await this.requestRaw(info3, data);
           if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
             let authenticationHandler;
             for (let i = 0; i < this.handlers.length; i++) {
@@ -713,7 +713,7 @@ var require_http_client = __commonJS({
               }
             }
             if (authenticationHandler) {
-              return authenticationHandler.handleAuthentication(this, info2, data);
+              return authenticationHandler.handleAuthentication(this, info3, data);
             } else {
               return response;
             }
@@ -736,8 +736,8 @@ var require_http_client = __commonJS({
                 }
               }
             }
-            info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-            response = await this.requestRaw(info2, data);
+            info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+            response = await this.requestRaw(info3, data);
             redirectsRemaining--;
           }
           if (HttpResponseRetryCodes.indexOf(response.message.statusCode) == -1) {
@@ -757,7 +757,7 @@ var require_http_client = __commonJS({
         }
         this._disposed = true;
       }
-      requestRaw(info2, data) {
+      requestRaw(info3, data) {
         return new Promise((resolve, reject) => {
           let callbackForResult = function(err, res) {
             if (err) {
@@ -765,13 +765,13 @@ var require_http_client = __commonJS({
             }
             resolve(res);
           };
-          this.requestRawWithCallback(info2, data, callbackForResult);
+          this.requestRawWithCallback(info3, data, callbackForResult);
         });
       }
-      requestRawWithCallback(info2, data, onResult) {
+      requestRawWithCallback(info3, data, onResult) {
         let socket;
         if (typeof data === "string") {
-          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         let handleResult = (err, res) => {
@@ -780,7 +780,7 @@ var require_http_client = __commonJS({
             onResult(err, res);
           }
         };
-        let req = info2.httpModule.request(info2.options, (msg) => {
+        let req = info3.httpModule.request(info3.options, (msg) => {
           let res = new HttpClientResponse(msg);
           handleResult(null, res);
         });
@@ -791,7 +791,7 @@ var require_http_client = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error("Request timeout: " + info2.options.path), null);
+          handleResult(new Error("Request timeout: " + info3.options.path), null);
         });
         req.on("error", function(err) {
           handleResult(err, null);
@@ -813,27 +813,27 @@ var require_http_client = __commonJS({
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info2 = {};
-        info2.parsedUrl = requestUrl;
-        const usingSsl = info2.parsedUrl.protocol === "https:";
-        info2.httpModule = usingSsl ? https : http;
+        const info3 = {};
+        info3.parsedUrl = requestUrl;
+        const usingSsl = info3.parsedUrl.protocol === "https:";
+        info3.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info2.options = {};
-        info2.options.host = info2.parsedUrl.hostname;
-        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
-        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
-        info2.options.method = method;
-        info2.options.headers = this._mergeHeaders(headers);
+        info3.options = {};
+        info3.options.host = info3.parsedUrl.hostname;
+        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
+        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
+        info3.options.method = method;
+        info3.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info2.options.headers["user-agent"] = this.userAgent;
+          info3.options.headers["user-agent"] = this.userAgent;
         }
-        info2.options.agent = this._getAgent(info2.parsedUrl);
+        info3.options.agent = this._getAgent(info3.parsedUrl);
         if (this.handlers) {
           this.handlers.forEach((handler) => {
-            handler.prepareRequest(info2.options);
+            handler.prepareRequest(info3.options);
           });
         }
-        return info2;
+        return info3;
       }
       _mergeHeaders(headers) {
         const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => (c[k.toLowerCase()] = obj[k], c), {});
@@ -1449,10 +1449,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info2(message) {
+    function info3(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info2;
+    exports.info = info3;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -1498,11 +1498,19 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 // src/index.ts
 init_cjs_shims();
 var import_child_process = require("child_process");
+var import_core2 = __toESM(require_core());
+
+// src/utils.ts
+init_cjs_shims();
 var import_core = __toESM(require_core());
+var printAppMessage = (app) => (message) => (0, import_core.info)(`[App ${app}] ${message}`);
+
+// src/index.ts
 var inputs = {
-  email: (0, import_core.getInput)("email"),
-  apiKey: (0, import_core.getInput)("api_key"),
-  appNames: (0, import_core.getMultilineInput)("app_names")
+  email: (0, import_core2.getInput)("email"),
+  apiKey: (0, import_core2.getInput)("api_key"),
+  appNames: (0, import_core2.getMultilineInput)("app_names"),
+  pushTimeout: (0, import_core2.getInput)("push_timeout")
 };
 var checkInputs = () => {
   const allPresent = Object.values(inputs).every((value) => !!value && !!value.length);
@@ -1519,53 +1527,55 @@ machine git.heroku.com
     password ${inputs.apiKey}
 EOF`);
 var addRemotes = () => {
-  const addRemote = (app, index) => {
+  const addRemote = (app) => {
+    const printMessage = printAppMessage(app);
     try {
-      (0, import_core.info)(`[App ${index}] Setting remote with Heroku CLI...`);
+      printMessage("Setting remote with Heroku CLI...");
       (0, import_child_process.execSync)(`heroku git:remote --app ${app}`);
-      (0, import_core.info)(`[App ${index}] Finished setting remote with Heroku CLI`);
-      (0, import_core.info)(`[App ${index}] Renaming remote branch...`);
+      printMessage("Finished setting remote with Heroku CLI");
+      printMessage("Renaming remote branch...");
       (0, import_child_process.execSync)(`git remote rename heroku ${app}`);
-      (0, import_core.info)(`[App ${index}] Finished renaming remote branch`);
+      printMessage("Finished renaming remote branch");
     } catch (e) {
-      (0, import_core.error)(`An error occurred whilst setting remote for app [${index}].`);
-      e instanceof Error && (0, import_core.setFailed)(e);
+      (0, import_core2.error)(`An error occurred whilst setting remote for app [${app}].`);
+      e instanceof Error && (0, import_core2.setFailed)(e);
     }
   };
   inputs.appNames.forEach(addRemote);
 };
 var pushRemotes = (branch) => {
-  const pushRemote = (app, index) => {
-    (0, import_core.info)(`[App ${index}] Pushing branch to Heroku remote...`);
-    (0, import_child_process.exec)(`git push ${app} ${branch}`, { timeout: 5e3 }, function(err, stdout, stderr) {
+  const pushRemote = (app) => {
+    const printMessage = printAppMessage(app);
+    printMessage("Pushing branch to Heroku remote...");
+    (0, import_child_process.exec)(`git push ${app} ${branch}`, { timeout: Number(inputs.pushTimeout) }, (err, stdout, stderr) => {
       if (stderr) {
-        (0, import_core.error)(`An error occurred whilst pushing branch for app [${index}].`);
-        (0, import_core.setFailed)(stderr);
+        (0, import_core2.error)(`An error occurred whilst pushing branch for app [${app}].`);
+        (0, import_core2.setFailed)(stderr);
       }
-      (0, import_core.info)(stdout);
+      (0, import_core2.info)(stdout);
     });
-    (0, import_core.info)(`[App ${index}] Finished pushing branch to Heroku remote`);
+    printMessage("Finished pushing branch to Heroku remote");
   };
   inputs.appNames.forEach(pushRemote);
 };
 var main = async () => {
   const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();
   if (branch !== "master" || "main") {
-    (0, import_core.setFailed)("Branch must be 'master' or 'main'");
+    (0, import_core2.setFailed)("Branch must be 'master' or 'main'");
   }
-  (0, import_core.info)("Checking all input variables are present...");
+  (0, import_core2.info)("Checking all input variables are present...");
   checkInputs();
-  (0, import_core.info)("All input variables are present!");
-  (0, import_core.info)("Creating .netrc file...");
+  (0, import_core2.info)("All input variables are present!");
+  (0, import_core2.info)("Creating .netrc file...");
   createNetrcFile();
-  (0, import_core.info)("Finished creating .netrc file!");
-  (0, import_core.info)("Setting remote(s)...");
+  (0, import_core2.info)("Finished creating .netrc file!");
+  (0, import_core2.info)("Setting remote(s)...");
   addRemotes();
-  (0, import_core.info)("Finished setting remote(s)!");
-  (0, import_core.info)("Pushing to Heroku remote(s)...");
+  (0, import_core2.info)("Finished setting remote(s)!");
+  (0, import_core2.info)("Pushing to Heroku remote(s)...");
   pushRemotes(branch);
-  (0, import_core.info)("Finished pushing to Heroku remote(s)!");
+  (0, import_core2.info)("Finished pushing to Heroku remote(s)!");
 };
 main().catch((err) => {
-  (0, import_core.setFailed)(err);
+  (0, import_core2.setFailed)(err);
 });
