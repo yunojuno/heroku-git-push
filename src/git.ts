@@ -1,6 +1,6 @@
 import { printAppMessage } from "./utils";
 import { execSync, spawn } from "child_process";
-import { error, info, setFailed } from "@actions/core";
+import { error, setFailed } from "@actions/core";
 
 /**
  * Uses Heroku CLI to create a remote branch for each app.
@@ -74,7 +74,7 @@ export const pushRemotes = async (appNames: string[], branch: string) => {
       // check stdout for kill words
       pushProcess.stdout.on("data", (data: Buffer) => {
         if (testForKill(data.toString())) {
-          info(`Finished pushing ${branch} to Heroku remote`);
+          printMessage(`Finished pushing ${branch} to Heroku remote`);
           resolve();
         }
       });
@@ -82,7 +82,7 @@ export const pushRemotes = async (appNames: string[], branch: string) => {
       // check stderr for kill words
       pushProcess.stderr.on("data", (data: Buffer) => {
         if (testForKill(data.toString())) {
-          info(`Finished pushing ${branch} to Heroku remote`);
+          printMessage(`Finished pushing ${branch} to Heroku remote`);
           resolve();
         }
       });
