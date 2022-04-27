@@ -1565,34 +1565,24 @@ var pushRemotes = async (branch) => {
       pushProcess.stdout.on("data", (data) => {
         printMessage(data.toString());
         if (testForKill(data.toString())) {
-          pushProcess.kill();
+          (0, import_child_process.spawn)("taskkill", ["/pid", `${pushProcess.pid}`, "/f", "/t"]);
           resolve();
         }
       });
       pushProcess.stderr.on("data", (data) => {
         printMessage(data.toString());
         if (testForKill(data.toString())) {
-          pushProcess.kill();
-          pushProcess.disconnect();
+          (0, import_child_process.spawn)("taskkill", ["/pid", `${pushProcess.pid}`, "/f", "/t"]);
           resolve();
         }
       });
       pushProcess.on("error", (error2) => {
         (0, import_core2.setFailed)(error2);
-        pushProcess.kill();
-        pushProcess.disconnect();
-        resolve();
-      });
-      pushProcess.on("close", (code) => {
-        printMessage(`Push process closed with code ${code}`);
-        pushProcess.disconnect();
         resolve();
       });
       pushProcess.on("exit", (code) => {
-        pushProcess.disconnect();
         printMessage(`Push process exited with code ${code}`);
         printMessage(`Finished pushing ${branch} to Heroku remote`);
-        resolve();
       });
     });
   };
