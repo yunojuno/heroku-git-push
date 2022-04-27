@@ -1587,7 +1587,8 @@ var pushRemotes = async (branch) => {
     });
   };
   await Promise.all(inputs.appNames.map(pushRemote));
-  pidStack.forEach((pid) => (0, import_child_process.spawn)("taskkill", ["/pid", `${pid}`, "/f", "/t"]));
+  (0, import_core2.info)(pidStack.toString());
+  pidStack.forEach((pid) => (0, import_child_process.execSync)(`kill -9 ${pid}`));
 };
 var main = async () => {
   const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();

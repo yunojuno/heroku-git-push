@@ -108,7 +108,8 @@ const pushRemotes = async (branch: string) => {
   };
 
   await Promise.all(inputs.appNames.map(pushRemote));
-  pidStack.forEach((pid) => spawn("taskkill", ["/pid", `${pid}`, "/f", "/t"]));
+  info(pidStack.toString());
+  pidStack.forEach((pid) => execSync(`kill -9 ${pid}`));
 };
 
 const main = async () => {
