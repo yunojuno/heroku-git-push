@@ -23,7 +23,7 @@ export const addRemotes = (appNames: string[]) => {
 
   appNames.forEach(addRemote);
   // Leave some space after
-  info("\n");
+  info("");
 };
 
 /**
@@ -107,7 +107,7 @@ export const pushToRemotes = async (appNames: string[], branch: string) => {
     const pushedApps = await Promise.all(appNames.map(pushToRemote));
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
     // Leave some space after
-    info("\n");
+    info("");
   } catch (e) {
     printError("Something went wrong pushing apps");
     e instanceof Error && setFailed(e);
