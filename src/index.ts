@@ -61,9 +61,7 @@ const pushRemotes = (branch: string) => {
   const pushRemote = (app: string) => {
     const printMessage = printAppMessage(app);
     printMessage("Pushing branch to Heroku remote...");
-    const proc = spawn(`git push ${app} ${branch}`, {
-      timeout: Number(inputs.pushTimeout),
-    });
+    const proc = spawn(`git push ${app} ${branch}`);
 
     proc.stderr.addListener("data", (data) => {
       if (data.toString().includes("Building source:")) {
