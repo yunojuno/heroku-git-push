@@ -73,42 +73,35 @@ const pushRemotes = async (branch: string) => {
     return false;
   };
 
-  const pushRemote = (app: string) => {
-    return new Promise<void>((resolve) => {
+  const pushRemote = (app: string) =>
+    new Promise<void>((resolve, reject) => {
       const printMessage = printAppMessage(app);
 
       printMessage(`Pushing ${branch} to Heroku remote..`);
 
-      const pushProcess = spawn("git", ["push", app], { detached: true });
+      const pushProcess = spawn("git", ["push", app, branch]);
 
       pushProcess.stdout.on("data", (data: Buffer) => {
-        printMessage(data.toString());
         if (testForKill(data.toString())) {
+          info(`Finished pushing ${branch} to Heroku remote`);
           resolve();
         }
       });
+
       pushProcess.stderr.on("data", (data: Buffer) => {
-        printMessage(data.toString());
         if (testForKill(data.toString())) {
+          info(`Finished pushing ${branch} to Heroku remote`);
           resolve();
         }
       });
 
       pushProcess.on("error", (error: Error) => {
         setFailed(error);
-        resolve();
-      });
-
-      pushProcess.on("exit", (code: string) => {
-        printMessage(`Push process exited with code ${code}`);
-        printMessage(`Finished pushing ${branch} to Heroku remote`);
-        resolve();
+        reject();
       });
     });
-  };
 
   await Promise.all(inputs.appNames.map(pushRemote));
-  process.exit();
 };
 
 const main = async () => {
@@ -133,6 +126,7 @@ const main = async () => {
   info("Pushing to Heroku remote(s)...");
   await pushRemotes(branch);
   info("Finished pushing to Heroku remote(s)!");
+  process.exit();
 };
 
 main().catch((err) => {

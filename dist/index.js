@@ -1557,36 +1557,28 @@ var pushRemotes = async (branch) => {
     }
     return false;
   };
-  const pushRemote = (app) => {
-    return new Promise((resolve) => {
-      const printMessage = printAppMessage(app);
-      printMessage(`Pushing ${branch} to Heroku remote..`);
-      const pushProcess = (0, import_child_process.spawn)("git", ["push", app], { detached: true });
-      pushProcess.stdout.on("data", (data) => {
-        printMessage(data.toString());
-        if (testForKill(data.toString())) {
-          resolve();
-        }
-      });
-      pushProcess.stderr.on("data", (data) => {
-        printMessage(data.toString());
-        if (testForKill(data.toString())) {
-          resolve();
-        }
-      });
-      pushProcess.on("error", (error2) => {
-        (0, import_core2.setFailed)(error2);
+  const pushRemote = (app) => new Promise((resolve, reject) => {
+    const printMessage = printAppMessage(app);
+    printMessage(`Pushing ${branch} to Heroku remote..`);
+    const pushProcess = (0, import_child_process.spawn)("git", ["push", app, branch]);
+    pushProcess.stdout.on("data", (data) => {
+      if (testForKill(data.toString())) {
+        (0, import_core2.info)(`Finished pushing ${branch} to Heroku remote`);
         resolve();
-      });
-      pushProcess.on("exit", (code) => {
-        printMessage(`Push process exited with code ${code}`);
-        printMessage(`Finished pushing ${branch} to Heroku remote`);
-        resolve();
-      });
+      }
     });
-  };
+    pushProcess.stderr.on("data", (data) => {
+      if (testForKill(data.toString())) {
+        (0, import_core2.info)(`Finished pushing ${branch} to Heroku remote`);
+        resolve();
+      }
+    });
+    pushProcess.on("error", (error2) => {
+      (0, import_core2.setFailed)(error2);
+      reject();
+    });
+  });
   await Promise.all(inputs.appNames.map(pushRemote));
-  process.exit();
 };
 var main = async () => {
   const branch = (0, import_child_process.execSync)("git branch --show-current").toString().trim();
@@ -1605,6 +1597,7 @@ var main = async () => {
   (0, import_core2.info)("Pushing to Heroku remote(s)...");
   await pushRemotes(branch);
   (0, import_core2.info)("Finished pushing to Heroku remote(s)!");
+  process.exit();
 };
 main().catch((err) => {
   (0, import_core2.setFailed)(err);
