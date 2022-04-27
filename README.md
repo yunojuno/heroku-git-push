@@ -33,9 +33,9 @@ jobs:
         with:
           email: ${{ secrets.HEROKU_PUSH_EMAIL }}
           api_key: ${{ secrets.HEROKU_PUSH_API_KEY }}
-          app_names:
-            - ${{ env.HEROKU_PUSH_DEV_APP_NAME }}
-            - ${{ env.HEROKU_PUSH_UAT_APP_NAME }}
+          app_names: |
+            ${{ env.HEROKU_PUSH_DEV_APP_NAME }}
+            ${{ env.HEROKU_PUSH_UAT_APP_NAME }}
 -         timeout: 5000
 ```
 

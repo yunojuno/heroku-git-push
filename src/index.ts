@@ -1,4 +1,4 @@
-import { exec, execSync } from "child_process";
+import { exec, execSync, spawn } from "child_process";
 import {
   error,
   getInput,
@@ -71,6 +71,14 @@ const pushRemotes = (branch: string) => {
       }
     );
 
+    const process = spawn(`git push ${app} ${branch}`);
+
+    process.on("message", (message) => {
+      if (message.toString().includes("heroku")) {
+        process.disconnect();
+      }
+    });
+
     printMessage("Finished pushing branch to Heroku remote");
   };
 
@@ -81,7 +89,7 @@ const main = async () => {
   const branch = execSync("git branch --show-current").toString().trim();
 
   if (branch !== "master" || "main") {
-    setFailed("Branch must be 'master' or 'main'");
+    setFailed(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
 
   info("Checking all input variables are present...");
