@@ -1,5 +1,5 @@
 import { execSync, spawn } from "child_process";
-import { setFailed } from "@actions/core";
+import { info, setFailed } from "@actions/core";
 import { printError, printInfo, printSuccess } from "./logging";
 
 /**
@@ -13,9 +13,8 @@ export const addRemotes = (appNames: string[]) => {
   const addRemote = (app: string) => {
     try {
       execSync(`heroku git:remote --app ${app}`);
-      printSuccess("Set remote with Heroku CLI", app);
       execSync(`git remote rename heroku ${app}`);
-      printSuccess("Renamed remote", app);
+      printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
       printError("An error occurred whilst setting remote", app);
       e instanceof Error && setFailed(e);
@@ -23,6 +22,8 @@ export const addRemotes = (appNames: string[]) => {
   };
 
   appNames.forEach(addRemote);
+  // Leave some space after
+  info("\n");
 };
 
 /**
@@ -43,7 +44,7 @@ const processKillTriggerWords = [
  */
 export const testForKill = (input: string) => {
   for (const triggerWord in processKillTriggerWords) {
-    if (input.includes(processKillTriggerWords[triggerWord])) {
+    if (input.includes(triggerWord)) {
       return triggerWord;
     }
   }
@@ -61,7 +62,7 @@ const handleProcessOutput = (
 
   if (!!matchingWord) {
     printInfo(`Detected: "${matchingWord}`, app);
-    printInfo("Marking app as pushed", app);
+    printSuccess("Marking app as pushed", app);
     pushed(app);
   }
 };
@@ -100,6 +101,8 @@ export const pushRemotes = async (appNames: string[], branch: string) => {
   try {
     const pushedApps = await Promise.all(appNames.map(pushRemote));
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
+    // Leave some space after
+    info("\n");
   } catch (e) {
     printError("Something went wrong pushing apps");
     e instanceof Error && setFailed(e);

@@ -17,11 +17,11 @@ const main = async () => {
   if (!["main", "master"].includes(branch)) {
     setFailed(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
-  printSuccess(`Branch name is set to ${branch}`);
+  printSuccess(`Branch name is set to ${branch}\n`);
 
   info("Checking all input variables are present...");
   checkInputs(inputs);
-  printSuccess("All inputs present");
+  printSuccess("All inputs present\n");
 
   info("Creating .netrc file...");
   createNetrcFile(inputs.email, inputs.apiKey);
@@ -31,7 +31,7 @@ const main = async () => {
 
   info("Starting push to Heroku remotes");
   await pushRemotes(inputs.appNames, branch);
-  printSuccess("Finished pushing to Heroku remotes!");
+  printSuccess("All done!");
   process.exit();
 };
 

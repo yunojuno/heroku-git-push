@@ -6,7 +6,7 @@ export const printInfo = (message: string, app?: string) => {
 };
 
 export const printSuccess = (message: string, app?: string) => {
-  const greenMessage = `\u001b[32m${message}\n`;
+  const greenMessage = `\u001b[32m${message}`;
   info(!!app ? formatAppMessage(greenMessage, app) : greenMessage);
 };
 

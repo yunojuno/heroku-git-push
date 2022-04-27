@@ -698,12 +698,12 @@ var require_http_client = __commonJS({
           throw new Error("Client has already been disposed.");
         }
         let parsedUrl = new URL(requestUrl);
-        let info3 = this._prepareRequest(verb, parsedUrl, headers);
+        let info4 = this._prepareRequest(verb, parsedUrl, headers);
         let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1 ? this._maxRetries + 1 : 1;
         let numTries = 0;
         let response;
         while (numTries < maxTries) {
-          response = await this.requestRaw(info3, data);
+          response = await this.requestRaw(info4, data);
           if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
             let authenticationHandler;
             for (let i = 0; i < this.handlers.length; i++) {
@@ -713,7 +713,7 @@ var require_http_client = __commonJS({
               }
             }
             if (authenticationHandler) {
-              return authenticationHandler.handleAuthentication(this, info3, data);
+              return authenticationHandler.handleAuthentication(this, info4, data);
             } else {
               return response;
             }
@@ -736,8 +736,8 @@ var require_http_client = __commonJS({
                 }
               }
             }
-            info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-            response = await this.requestRaw(info3, data);
+            info4 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+            response = await this.requestRaw(info4, data);
             redirectsRemaining--;
           }
           if (HttpResponseRetryCodes.indexOf(response.message.statusCode) == -1) {
@@ -757,7 +757,7 @@ var require_http_client = __commonJS({
         }
         this._disposed = true;
       }
-      requestRaw(info3, data) {
+      requestRaw(info4, data) {
         return new Promise((resolve, reject) => {
           let callbackForResult = function(err, res) {
             if (err) {
@@ -765,13 +765,13 @@ var require_http_client = __commonJS({
             }
             resolve(res);
           };
-          this.requestRawWithCallback(info3, data, callbackForResult);
+          this.requestRawWithCallback(info4, data, callbackForResult);
         });
       }
-      requestRawWithCallback(info3, data, onResult) {
+      requestRawWithCallback(info4, data, onResult) {
         let socket;
         if (typeof data === "string") {
-          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info4.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         let handleResult = (err, res) => {
@@ -780,7 +780,7 @@ var require_http_client = __commonJS({
             onResult(err, res);
           }
         };
-        let req = info3.httpModule.request(info3.options, (msg) => {
+        let req = info4.httpModule.request(info4.options, (msg) => {
           let res = new HttpClientResponse(msg);
           handleResult(null, res);
         });
@@ -791,7 +791,7 @@ var require_http_client = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error("Request timeout: " + info3.options.path), null);
+          handleResult(new Error("Request timeout: " + info4.options.path), null);
         });
         req.on("error", function(err) {
           handleResult(err, null);
@@ -813,27 +813,27 @@ var require_http_client = __commonJS({
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info3 = {};
-        info3.parsedUrl = requestUrl;
-        const usingSsl = info3.parsedUrl.protocol === "https:";
-        info3.httpModule = usingSsl ? https : http;
+        const info4 = {};
+        info4.parsedUrl = requestUrl;
+        const usingSsl = info4.parsedUrl.protocol === "https:";
+        info4.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info3.options = {};
-        info3.options.host = info3.parsedUrl.hostname;
-        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
-        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
-        info3.options.method = method;
-        info3.options.headers = this._mergeHeaders(headers);
+        info4.options = {};
+        info4.options.host = info4.parsedUrl.hostname;
+        info4.options.port = info4.parsedUrl.port ? parseInt(info4.parsedUrl.port) : defaultPort;
+        info4.options.path = (info4.parsedUrl.pathname || "") + (info4.parsedUrl.search || "");
+        info4.options.method = method;
+        info4.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info3.options.headers["user-agent"] = this.userAgent;
+          info4.options.headers["user-agent"] = this.userAgent;
         }
-        info3.options.agent = this._getAgent(info3.parsedUrl);
+        info4.options.agent = this._getAgent(info4.parsedUrl);
         if (this.handlers) {
           this.handlers.forEach((handler) => {
-            handler.prepareRequest(info3.options);
+            handler.prepareRequest(info4.options);
           });
         }
-        return info3;
+        return info4;
       }
       _mergeHeaders(headers) {
         const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => (c[k.toLowerCase()] = obj[k], c), {});
@@ -1449,10 +1449,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info3(message) {
+    function info4(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info3;
+    exports.info = info4;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -1511,8 +1511,7 @@ var printInfo = (message, app) => {
   (0, import_core.info)(!!app ? formatAppMessage(message, app) : message);
 };
 var printSuccess = (message, app) => {
-  const greenMessage = `\x1B[32m${message}
-`;
+  const greenMessage = `\x1B[32m${message}`;
   (0, import_core.info)(!!app ? formatAppMessage(greenMessage, app) : greenMessage);
 };
 var printError = (message, app) => {
@@ -1537,7 +1536,7 @@ machine git.heroku.com
     login ${email}
     password ${apiKey}
 EOF`);
-  printSuccess("Created ~/.netrc");
+  printSuccess("Created ~/.netrc\n");
 };
 
 // src/git.ts
@@ -1548,15 +1547,15 @@ var addRemotes = (appNames) => {
   const addRemote = (app) => {
     try {
       (0, import_child_process2.execSync)(`heroku git:remote --app ${app}`);
-      printSuccess("Set remote with Heroku CLI", app);
       (0, import_child_process2.execSync)(`git remote rename heroku ${app}`);
-      printSuccess("Renamed remote", app);
+      printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
       printError("An error occurred whilst setting remote", app);
       e instanceof Error && (0, import_core2.setFailed)(e);
     }
   };
   appNames.forEach(addRemote);
+  (0, import_core2.info)("\n");
 };
 var processKillTriggerWords = [
   "building source",
@@ -1565,7 +1564,7 @@ var processKillTriggerWords = [
 ];
 var testForKill = (input) => {
   for (const triggerWord in processKillTriggerWords) {
-    if (input.includes(processKillTriggerWords[triggerWord])) {
+    if (input.includes(triggerWord)) {
       return triggerWord;
     }
   }
@@ -1576,7 +1575,7 @@ var handleProcessOutput = (data, app, pushed) => {
   const matchingWord = testForKill(data.toString());
   if (!!matchingWord) {
     printInfo(`Detected: "${matchingWord}`, app);
-    printInfo("Marking app as pushed", app);
+    printSuccess("Marking app as pushed", app);
     pushed(app);
   }
 };
@@ -1594,6 +1593,7 @@ var pushRemotes = async (appNames, branch) => {
   try {
     const pushedApps = await Promise.all(appNames.map(pushRemote));
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
+    (0, import_core2.info)("\n");
   } catch (e) {
     printError("Something went wrong pushing apps");
     e instanceof Error && (0, import_core2.setFailed)(e);
@@ -1612,17 +1612,18 @@ var main = async () => {
   if (!["main", "master"].includes(branch)) {
     (0, import_core3.setFailed)(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
-  printSuccess(`Branch name is set to ${branch}`);
+  printSuccess(`Branch name is set to ${branch}
+`);
   (0, import_core3.info)("Checking all input variables are present...");
   checkInputs(inputs);
-  printSuccess("All inputs present");
+  printSuccess("All inputs present\n");
   (0, import_core3.info)("Creating .netrc file...");
   createNetrcFile(inputs.email, inputs.apiKey);
   (0, import_core3.info)("Setting remotes");
   addRemotes(inputs.appNames);
   (0, import_core3.info)("Starting push to Heroku remotes");
   await pushRemotes(inputs.appNames, branch);
-  printSuccess("Finished pushing to Heroku remotes!");
+  printSuccess("All done!");
   process.exit();
 };
 main().catch((err) => {

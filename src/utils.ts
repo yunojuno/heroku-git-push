@@ -45,5 +45,5 @@ machine git.heroku.com
     password ${apiKey}
 EOF`);
 
-  printSuccess("Created ~/.netrc");
+  printSuccess("Created ~/.netrc\n");
 };
