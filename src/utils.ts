@@ -2,7 +2,7 @@ import { info } from "@actions/core";
 import { execSync } from "child_process";
 
 export const printAppMessage = (app: string) => (message: string) =>
-  info(`[App ${app}] ${message}`);
+  info(`[${app}] ${message}`);
 
 export const checkInputs = (inputs: Record<string, string | string[]>) => {
   const missingValues = Object.entries(inputs).reduce<string[]>(

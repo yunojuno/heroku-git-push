@@ -1504,7 +1504,7 @@ var import_core3 = __toESM(require_core());
 init_cjs_shims();
 var import_core = __toESM(require_core());
 var import_child_process = require("child_process");
-var printAppMessage = (app) => (message) => (0, import_core.info)(`[App ${app}] ${message}`);
+var printAppMessage = (app) => (message) => (0, import_core.info)(`[${app}] ${message}`);
 var checkInputs = (inputs2) => {
   const missingValues = Object.entries(inputs2).reduce((missing, [inputName, inputValue]) => !!inputValue && !!inputValue.length ? missing : [...missing, inputName], []);
   if (missingValues.length) {
