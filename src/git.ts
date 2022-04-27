@@ -80,8 +80,8 @@ const handleProcessOutput = (
  *
  * @return promise which resolves once all remotes have finished pushing
  */
-export const pushRemotes = async (appNames: string[], branch: string) => {
-  const pushRemote = (app: string) =>
+export const pushToRemotes = async (appNames: string[], branch: string) => {
+  const pushToRemote = (app: string) =>
     new Promise<string>((pushed, failed) => {
       printInfo(`Pushing ${branch} to remote`, app);
       const pushProcess = spawn("git", ["push", app, branch]);
@@ -104,7 +104,7 @@ export const pushRemotes = async (appNames: string[], branch: string) => {
     });
 
   try {
-    const pushedApps = await Promise.all(appNames.map(pushRemote));
+    const pushedApps = await Promise.all(appNames.map(pushToRemote));
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
     // Leave some space after
     info("\n");

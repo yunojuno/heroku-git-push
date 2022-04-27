@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { getInput, getMultilineInput, info, setFailed } from "@actions/core";
 import { checkInputs, createNetrcFile } from "./utils";
-import { addRemotes, pushRemotes } from "./git";
+import { addRemotes, pushToRemotes } from "./git";
 import { printSuccess } from "./logging";
 
 const inputs = {
@@ -30,7 +30,7 @@ const main = async () => {
   addRemotes(inputs.appNames);
 
   info("Starting push to Heroku remotes");
-  await pushRemotes(inputs.appNames, branch);
+  await pushToRemotes(inputs.appNames, branch);
   printSuccess("All done!");
   process.exit();
 };

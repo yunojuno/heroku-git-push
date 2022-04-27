@@ -1578,8 +1578,8 @@ var handleProcessOutput = (data, app, pushed) => {
     pushed(app);
   }
 };
-var pushRemotes = async (appNames, branch) => {
-  const pushRemote = (app) => new Promise((pushed, failed) => {
+var pushToRemotes = async (appNames, branch) => {
+  const pushToRemote = (app) => new Promise((pushed, failed) => {
     printInfo(`Pushing ${branch} to remote`, app);
     const pushProcess = (0, import_child_process2.spawn)("git", ["push", app, branch]);
     pushProcess.stdout.on("data", (data) => handleProcessOutput(data, app, pushed));
@@ -1590,7 +1590,7 @@ var pushRemotes = async (appNames, branch) => {
     });
   });
   try {
-    const pushedApps = await Promise.all(appNames.map(pushRemote));
+    const pushedApps = await Promise.all(appNames.map(pushToRemote));
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
     (0, import_core2.info)("\n");
   } catch (e) {
@@ -1621,7 +1621,7 @@ var main = async () => {
   (0, import_core3.info)("Setting remotes");
   addRemotes(inputs.appNames);
   (0, import_core3.info)("Starting push to Heroku remotes");
-  await pushRemotes(inputs.appNames, branch);
+  await pushToRemotes(inputs.appNames, branch);
   printSuccess("All done!");
   process.exit();
 };
