@@ -41,4 +41,4 @@ export const printError = (message: string, app?: string) => {
  * @param app app name
  */
 const formatAppMessage = (message: string, app: string) =>
-  `[${app}] ${message}`;
+  `[\u001b[36m${app}] \u001b[0m${message}`;
