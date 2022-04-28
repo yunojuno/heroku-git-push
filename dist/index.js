@@ -27,6 +27,10 @@ var __esm = (fn, res) => function __init() {
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -36,6 +40,7 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // node_modules/tsup/assets/cjs_shims.js
 var init_cjs_shims = __esm({
@@ -1496,6 +1501,11 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 });
 
 // src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  inputs: () => inputs
+});
+module.exports = __toCommonJS(src_exports);
 init_cjs_shims();
 var import_child_process3 = require("child_process");
 var import_core3 = __toESM(require_core());
@@ -1639,4 +1649,8 @@ var main = async () => {
 };
 main().catch((err) => {
   (0, import_core3.setFailed)(err);
+});
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  inputs
 });
