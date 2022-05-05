@@ -48,13 +48,13 @@ describe("git", () => {
       );
     });
 
-    it("prints error and calls setFailed with error if execSync fails", () => {
+    it("throws and prints error and calls setFailed with error if execSync fails", () => {
       const mockError = new Error("Test error");
       (execSync as jest.Mock).mockImplementationOnce(() => {
         throw mockError;
       });
 
-      addRemotes(appNames, false);
+      expect(() => addRemotes(appNames, false)).toThrow(mockError);
 
       expect(printError).toHaveBeenCalledTimes(1);
       expect(printError).toHaveBeenCalledWith(
@@ -93,14 +93,16 @@ describe("git", () => {
   });
 
   describe("pushToRemote", () => {
-    it("calls correct spawn command with correct print messages", () => {
-      pushToRemotes(["app-1"], "main", false);
+    const mockSpawn = {
+      stdout: {
+        on: jest.fn(),
+      },
+      stderr: {
+        on: jest.fn(),
+      },
 
-      expect(printInfo).toHaveBeenCalledWith("Pushing main to remote", "app-1");
-      expect(spawn).toHaveBeenCalledWith("git", ["push", "app-1", "main"]);
-    });
-
-    const mockOn = jest.fn();
+      on: jest.fn(),
+    };
 
     const testHappyPath = async (mockFn: jest.Mock) => {
       const promise = pushToRemotes(["app-1"], "main", false);
@@ -131,51 +133,37 @@ describe("git", () => {
       expect(info).toHaveBeenCalledWith("");
     };
 
-    it("resolves promise if spawn process prints kill word to stdout", async () => {
-      (spawn as jest.Mock).mockReturnValue({
-        stdout: {
-          on: mockOn,
-        },
-        stderr: {
-          on: jest.fn(),
-        },
-        on: jest.fn(),
-      });
+    beforeEach(() => {
+      (spawn as jest.Mock).mockReturnValue(mockSpawn);
+    });
 
-      await testHappyPath(mockOn);
+    it("calls correct spawn command with correct print messages", () => {
+      pushToRemotes(["app-1"], "main", false);
+
+      expect(printInfo).toHaveBeenCalledWith("Pushing main to remote", "app-1");
+      expect(spawn).toHaveBeenCalledWith("git", ["push", "app-1", "main"]);
+    });
+
+    it("resolves promise if spawn process prints kill word to stdout", async () => {
+      await testHappyPath(mockSpawn.stdout.on);
     });
 
     it("resolves promise if spawn process prints kill word to stderr", async () => {
-      (spawn as jest.Mock).mockReturnValue({
-        stdout: {
-          on: jest.fn(),
-        },
-        stderr: {
-          on: mockOn,
-        },
-        on: jest.fn(),
-      });
-
-      await testHappyPath(mockOn);
+      await testHappyPath(mockSpawn.stderr.on);
     });
 
-    it("prints error and fails if on error is called", async () => {
-      (spawn as jest.Mock).mockReturnValue({
-        stdout: {
-          on: jest.fn(),
-        },
-        stderr: {
-          on: jest.fn(),
-        },
-        on: mockOn,
-      });
+    it("throws and prints error and fails if on error is called", async () => {
       const error = new Error("Test error");
 
       const promise = pushToRemotes(["app-1"], "main", false);
 
-      mockOn.mock.calls[0][1](error);
+      mockSpawn.on.mock.calls[0][1](error);
 
-      await promise;
+      try {
+        await promise;
+      } catch (e) {
+        expect(e).toEqual(error);
+      }
 
       expect(printError).toHaveBeenCalledWith(
         "Something went wrong pushing apps"
@@ -196,9 +184,7 @@ describe("git", () => {
         },
       ];
 
-      (spawn as jest.Mock).mockReturnValue({
-        stdio,
-      });
+      (spawn as jest.Mock).mockReturnValue({ ...mockSpawn, stdio });
 
       const promise = pushToRemotes(["app-1"], "main", true);
 
@@ -207,10 +193,17 @@ describe("git", () => {
       expect(stdio[2].on).toHaveBeenCalledWith("data", expect.any(Function));
 
       stdio[0].on.mock.calls[0][1]("test output");
+      stdio[1].on.mock.calls[0][1]("test output");
+      stdio[2].on.mock.calls[0][1]("test output");
+
+      // trigger promise to finish
+      mockSpawn.stdout.on.mock.calls[0][1]("remote");
 
       await promise;
 
-      expect(printLog).toHaveBeenCalledWith("test output", "app-1");
+      expect(printLog).toHaveBeenNthCalledWith(1, "test output", "app-1");
+      expect(printLog).toHaveBeenNthCalledWith(2, "test output", "app-1");
+      expect(printLog).toHaveBeenNthCalledWith(3, "test output", "app-1");
     });
   });
 });

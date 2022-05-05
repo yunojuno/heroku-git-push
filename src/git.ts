@@ -20,7 +20,8 @@ export const addRemotes = (appNames: string[], debug: boolean) => {
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
       printError("An error occurred whilst setting remote", app);
-      e instanceof Error && setFailed(e);
+      (e instanceof Error || typeof e === "string") && setFailed(e);
+      throw e;
     }
   };
 
@@ -112,7 +113,7 @@ export const pushToRemotes = async (
       // reject and set fail on error
       pushProcess.on("error", (error: Error) => {
         setFailed(error);
-        failed();
+        failed(error);
       });
     });
 
@@ -123,6 +124,7 @@ export const pushToRemotes = async (
     info("");
   } catch (e) {
     printError("Something went wrong pushing apps");
-    e instanceof Error && setFailed(e);
+    (e instanceof Error || typeof e === "string") && setFailed(e);
+    throw e;
   }
 };
