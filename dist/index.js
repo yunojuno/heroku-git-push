@@ -1568,7 +1568,8 @@ var addRemotes = (appNames, debug) => {
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
       printError("An error occurred whilst setting remote", app);
-      e instanceof Error && (0, import_core2.setFailed)(e);
+      (e instanceof Error || typeof e === "string") && (0, import_core2.setFailed)(e);
+      throw e;
     }
   };
   appNames.forEach(addRemote);
@@ -1608,7 +1609,7 @@ var pushToRemotes = async (appNames, branch, debug) => {
     });
     pushProcess.on("error", (error2) => {
       (0, import_core2.setFailed)(error2);
-      failed();
+      failed(error2);
     });
   });
   try {
@@ -1617,7 +1618,8 @@ var pushToRemotes = async (appNames, branch, debug) => {
     (0, import_core2.info)("");
   } catch (e) {
     printError("Something went wrong pushing apps");
-    e instanceof Error && (0, import_core2.setFailed)(e);
+    (e instanceof Error || typeof e === "string") && (0, import_core2.setFailed)(e);
+    throw e;
   }
 };
 
