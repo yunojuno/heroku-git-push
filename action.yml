@@ -10,6 +10,10 @@ inputs:
   app_names:
     description: "Names of the apps on Heroku"
     required: true
+  debug:
+    description: "Prints extra logs from Heroku CLI and git commands, use 'true' to enable"
+    required: false
+    default: "false"
 
 runs:
   using: "node16"

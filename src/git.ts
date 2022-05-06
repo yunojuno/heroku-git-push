@@ -1,6 +1,6 @@
-import { printAppMessage } from "./utils";
 import { execSync, spawn } from "child_process";
-import { error, setFailed } from "@actions/core";
+import { info, setFailed } from "@actions/core";
+import { printError, printInfo, printLog, printSuccess } from "./logging";
 
 /**
  * Uses Heroku CLI to create a remote branch for each app.
@@ -8,25 +8,25 @@ import { error, setFailed } from "@actions/core";
  * By default creates a branch called heroku, which we rename to the unique app name
  *
  * @param appNames unique Heroku app names
+ * @param debug show all logs
  */
-export const addRemotes = (appNames: string[]) => {
+export const addRemotes = (appNames: string[], debug: boolean) => {
   const addRemote = (app: string) => {
-    const printMessage = printAppMessage(app);
     try {
-      printMessage("Setting remote with Heroku CLI...");
-      execSync(`heroku git:remote --app ${app}`);
-      printMessage("Finished setting remote with Heroku CLI");
-
-      printMessage("Renaming remote branch...");
+      execSync(`heroku git:remote --app ${app}`, {
+        stdio: debug ? "inherit" : "ignore",
+      });
       execSync(`git remote rename heroku ${app}`);
-      printMessage("Finished renaming remote branch");
+      printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
-      error(`An error occurred whilst setting remote for app [${app}].`);
+      printError("An error occurred whilst setting remote", app);
       e instanceof Error && setFailed(e);
     }
   };
 
   appNames.forEach(addRemote);
+  // Leave some space after
+  info("");
 };
 
 /**
@@ -46,12 +46,33 @@ const processKillTriggerWords = [
  * @param input string input from stdio
  */
 export const testForKill = (input: string) => {
-  for (const triggerWord in processKillTriggerWords) {
-    if (input.includes(processKillTriggerWords[triggerWord])) {
-      return true;
+  for (const triggerWord of processKillTriggerWords) {
+    if (input.includes(triggerWord)) {
+      return triggerWord;
     }
   }
   return false;
+};
+
+/**
+ * Handler which takes the process output and resolves if matched word is found.
+ *
+ * @param data process data
+ * @param app app name
+ * @param pushed app promise callback
+ */
+const handleProcessOutput = (
+  data: Buffer,
+  app: string,
+  pushed: (app: string) => void
+) => {
+  const matchingWord = testForKill(data.toString());
+
+  if (!!matchingWord) {
+    printInfo(`Detected: "${matchingWord}"`, app);
+    printSuccess("Marking app as pushed", app);
+    pushed(app);
+  }
 };
 
 /**
@@ -59,40 +80,49 @@ export const testForKill = (input: string) => {
  *
  * @param appNames unique Heroku app names
  * @param branch current branch name
+ * @param debug show all logs
  *
  * @return promise which resolves once all remotes have finished pushing
  */
-export const pushRemotes = async (appNames: string[], branch: string) => {
-  const pushRemote = (app: string) =>
-    new Promise<void>((resolve, reject) => {
-      const printMessage = printAppMessage(app);
-
-      printMessage(`Pushing ${branch} to Heroku remote..`);
-
+export const pushToRemotes = async (
+  appNames: string[],
+  branch: string,
+  debug: boolean
+) => {
+  const pushToRemote = (app: string) =>
+    new Promise<string>((pushed, failed) => {
+      printInfo(`Pushing ${branch} to remote`, app);
       const pushProcess = spawn("git", ["push", app, branch]);
+
+      debug &&
+        pushProcess.stdio.forEach((io) =>
+          io?.on("data", (data) => printLog(data.toString(), app))
+        );
 
       // check stdout for kill words
       pushProcess.stdout.on("data", (data: Buffer) => {
-        if (testForKill(data.toString())) {
-          printMessage(`Finished pushing ${branch} to Heroku remote`);
-          resolve();
-        }
+        handleProcessOutput(data, app, pushed);
       });
 
       // check stderr for kill words
       pushProcess.stderr.on("data", (data: Buffer) => {
-        if (testForKill(data.toString())) {
-          printMessage(`Finished pushing ${branch} to Heroku remote`);
-          resolve();
-        }
+        handleProcessOutput(data, app, pushed);
       });
 
       // reject and set fail on error
       pushProcess.on("error", (error: Error) => {
         setFailed(error);
-        reject();
+        failed();
       });
     });
 
-  return await Promise.all(appNames.map(pushRemote));
+  try {
+    const pushedApps = await Promise.all(appNames.map(pushToRemote));
+    printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
+    // Leave some space after
+    info("");
+  } catch (e) {
+    printError("Something went wrong pushing apps");
+    e instanceof Error && setFailed(e);
+  }
 };
