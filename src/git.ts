@@ -46,9 +46,9 @@ const processKillTriggerWords = [
  * @param input string input from stdio
  */
 export const testForKill = (input: string) => {
-  for (const wordIndex in processKillTriggerWords) {
-    if (input.includes(processKillTriggerWords[wordIndex])) {
-      return processKillTriggerWords[wordIndex];
+  for (const triggerWord of processKillTriggerWords) {
+    if (input.includes(triggerWord)) {
+      return triggerWord;
     }
   }
   return false;
