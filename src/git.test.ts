@@ -93,6 +93,15 @@ describe("git", () => {
   });
 
   describe("pushToRemote", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    });
+
     const mockSpawn = {
       stdout: {
         on: jest.fn(),
@@ -149,6 +158,36 @@ describe("git", () => {
 
     it("resolves promise if spawn process prints kill word to stderr", async () => {
       await testHappyPath(mockSpawn.stderr.on);
+    });
+
+    it("does not detect non related words and times out after 10 seconds", async () => {
+      const promise = pushToRemotes(["app-1"], "main", false);
+
+      expect(printInfo).toHaveBeenCalledTimes(1);
+
+      mockSpawn.stdout.on.mock.calls[0][1]("no match");
+
+      expect(printInfo).not.toHaveBeenCalledTimes(2);
+      expect(printInfo).not.toHaveBeenNthCalledWith(
+        2,
+        `Detected: "no match"`,
+        "app-1"
+      );
+
+      jest.runAllTimers();
+
+      try {
+        await promise;
+      } catch (e) {
+        expect(e).toEqual("Timed out waiting for trigger word");
+      }
+
+      expect(printInfo).not.toHaveBeenCalledTimes(2);
+      expect(printInfo).not.toHaveBeenNthCalledWith(
+        2,
+        `Detected: "no match"`,
+        "app-1"
+      );
     });
 
     it("throws and prints error and fails if on error is called", async () => {

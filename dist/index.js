@@ -1568,7 +1568,7 @@ var addRemotes = (appNames, debug) => {
       printSuccess("Set remote with Heroku CLI", app);
     } catch (e) {
       printError("An error occurred whilst setting remote", app);
-      (e instanceof Error || typeof e === "string") && (0, import_core2.setFailed)(e);
+      e instanceof Error && (0, import_core2.setFailed)(e);
       throw e;
     }
   };
@@ -1612,14 +1612,20 @@ var pushToRemotes = async (appNames, branch, debug) => {
       failed(error2);
     });
   });
+  let timeout;
   try {
-    const pushedApps = await Promise.all(appNames.map(pushToRemote));
+    const pushedApps = await Promise.race([
+      Promise.all(appNames.map(pushToRemote)),
+      new Promise((res, rej) => timeout = setTimeout(() => rej("Timed out waiting for trigger word"), 1e4))
+    ]);
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
     (0, import_core2.info)("");
   } catch (e) {
     printError("Something went wrong pushing apps");
-    (e instanceof Error || typeof e === "string") && (0, import_core2.setFailed)(e);
+    e instanceof Error && (0, import_core2.setFailed)(e);
     throw e;
+  } finally {
+    clearTimeout(timeout);
   }
 };
 
