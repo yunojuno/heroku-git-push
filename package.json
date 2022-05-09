@@ -7,7 +7,7 @@
     "build": "tsup src/index.ts",
     "prepare": "husky install",
     "test": "jest",
-    "ci": "CI=true jest --coverage --coverageDirectory=docs/coverage --coverageReporters=html --reporters=default --reporters=github-actions"
+    "ci": "CI=true jest --coverage --reporters=default --reporters=github-actions"
   },
   "devDependencies": {
     "@actions/core": "^1.7.0",
