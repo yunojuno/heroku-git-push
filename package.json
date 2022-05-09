@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsup src/index.ts",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest",
+    "ci": "CI=true jest --coverage --coverageDirectory=docs/coverage --coverageReportsers=html --reporters=default --reporters=github-actions"
   },
   "devDependencies": {
     "@actions/core": "^1.7.0",
