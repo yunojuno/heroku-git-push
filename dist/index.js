@@ -1581,9 +1581,9 @@ var processKillTriggerWords = [
   "compressing source files"
 ];
 var testForKill = (input) => {
-  for (const wordIndex in processKillTriggerWords) {
-    if (input.includes(processKillTriggerWords[wordIndex])) {
-      return processKillTriggerWords[wordIndex];
+  for (const triggerWord of processKillTriggerWords) {
+    if (input.includes(triggerWord)) {
+      return triggerWord;
     }
   }
   return false;

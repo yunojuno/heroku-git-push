@@ -100,7 +100,6 @@ describe("git", () => {
       stderr: {
         on: jest.fn(),
       },
-
       on: jest.fn(),
     };
 
