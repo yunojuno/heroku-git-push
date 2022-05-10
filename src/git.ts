@@ -125,7 +125,7 @@ export const pushToRemotes = async (
         (res, rej) =>
           (timeout = setTimeout(
             () => rej("Timed out waiting for trigger word"),
-            10000
+            30000
           ))
       ),
     ]);

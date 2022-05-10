@@ -1616,7 +1616,7 @@ var pushToRemotes = async (appNames, branch, debug) => {
   try {
     const pushedApps = await Promise.race([
       Promise.all(appNames.map(pushToRemote)),
-      new Promise((res, rej) => timeout = setTimeout(() => rej("Timed out waiting for trigger word"), 1e4))
+      new Promise((res, rej) => timeout = setTimeout(() => rej("Timed out waiting for trigger word"), 3e4))
     ]);
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
     (0, import_core2.info)("");
