@@ -4,7 +4,7 @@ import { checkInputs, createNetrcFile } from "./utils";
 import { addRemotes, pushToRemotes } from "./git";
 import { printSuccess } from "./logging";
 
-const inputs = {
+export const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
   appNames: getMultilineInput("app_names"),

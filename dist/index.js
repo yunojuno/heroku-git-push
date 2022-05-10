@@ -27,6 +27,10 @@ var __esm = (fn, res) => function __init() {
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
     for (let key of __getOwnPropNames(from))
@@ -36,6 +40,7 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // node_modules/tsup/assets/cjs_shims.js
 var init_cjs_shims = __esm({
@@ -1496,6 +1501,11 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 });
 
 // src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  inputs: () => inputs
+});
+module.exports = __toCommonJS(src_exports);
 init_cjs_shims();
 var import_child_process3 = require("child_process");
 var import_core3 = __toESM(require_core());
@@ -1559,6 +1569,7 @@ var addRemotes = (appNames, debug) => {
     } catch (e) {
       printError("An error occurred whilst setting remote", app);
       e instanceof Error && (0, import_core2.setFailed)(e);
+      throw e;
     }
   };
   appNames.forEach(addRemote);
@@ -1570,9 +1581,9 @@ var processKillTriggerWords = [
   "compressing source files"
 ];
 var testForKill = (input) => {
-  for (const wordIndex in processKillTriggerWords) {
-    if (input.includes(processKillTriggerWords[wordIndex])) {
-      return processKillTriggerWords[wordIndex];
+  for (const triggerWord of processKillTriggerWords) {
+    if (input.includes(triggerWord)) {
+      return triggerWord;
     }
   }
   return false;
@@ -1598,16 +1609,23 @@ var pushToRemotes = async (appNames, branch, debug) => {
     });
     pushProcess.on("error", (error2) => {
       (0, import_core2.setFailed)(error2);
-      failed();
+      failed(error2);
     });
   });
+  let timeout;
   try {
-    const pushedApps = await Promise.all(appNames.map(pushToRemote));
+    const pushedApps = await Promise.race([
+      Promise.all(appNames.map(pushToRemote)),
+      new Promise((res, rej) => timeout = setTimeout(() => rej("Timed out waiting for trigger word"), 1e4))
+    ]);
     printSuccess(`Finished pushing apps: ${pushedApps.toString()}`);
     (0, import_core2.info)("");
   } catch (e) {
     printError("Something went wrong pushing apps");
     e instanceof Error && (0, import_core2.setFailed)(e);
+    throw e;
+  } finally {
+    clearTimeout(timeout);
   }
 };
 
@@ -1639,4 +1657,8 @@ var main = async () => {
 };
 main().catch((err) => {
   (0, import_core3.setFailed)(err);
+});
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  inputs
 });
