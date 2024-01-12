@@ -113,7 +113,7 @@ describe("git", () => {
     };
 
     const testHappyPath = async (mockFn: jest.Mock) => {
-      const promise = pushToRemotes(["app-1"], "main", false);
+      const promise = pushToRemotes(["app-1"], "main", "main", false);
 
       expect(printInfo).toHaveBeenCalledTimes(1);
 
@@ -146,10 +146,10 @@ describe("git", () => {
     });
 
     it("calls correct spawn command with correct print messages", () => {
-      pushToRemotes(["app-1"], "main", false);
+      pushToRemotes(["app-1"], "main", "main", false);
 
       expect(printInfo).toHaveBeenCalledWith("Pushing main to remote", "app-1");
-      expect(spawn).toHaveBeenCalledWith("git", ["push", "app-1", "main"]);
+      expect(spawn).toHaveBeenCalledWith("git", ["push", "app-1", "main:main"]);
     });
 
     it("resolves promise if spawn process prints kill word to stdout", async () => {
@@ -161,7 +161,7 @@ describe("git", () => {
     });
 
     it("does not detect non related words and times out after 10 seconds", async () => {
-      const promise = pushToRemotes(["app-1"], "main", false);
+      const promise = pushToRemotes(["app-1"], "main", "main", false);
 
       expect(printInfo).toHaveBeenCalledTimes(1);
 
@@ -193,7 +193,7 @@ describe("git", () => {
     it("throws and prints error and fails if on error is called", async () => {
       const error = new Error("Test error");
 
-      const promise = pushToRemotes(["app-1"], "main", false);
+      const promise = pushToRemotes(["app-1"], "main", "main", false);
 
       mockSpawn.on.mock.calls[0][1](error);
 
@@ -224,7 +224,7 @@ describe("git", () => {
 
       (spawn as jest.Mock).mockReturnValue({ ...mockSpawn, stdio });
 
-      const promise = pushToRemotes(["app-1"], "main", true);
+      const promise = pushToRemotes(["app-1"], "main", "main", true);
 
       expect(stdio[0].on).toHaveBeenCalledWith("data", expect.any(Function));
       expect(stdio[1].on).toHaveBeenCalledWith("data", expect.any(Function));

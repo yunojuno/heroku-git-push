@@ -8,6 +8,8 @@ export const inputs = {
   email: getInput("email"),
   apiKey: getInput("api_key"),
   appNames: getMultilineInput("app_names"),
+  sourceBranch: getInput("source_branch"),
+  targetBranch: getInput("target_branch"),
   debug: getInput("debug").toLowerCase() === "true",
 } as const;
 
@@ -15,7 +17,7 @@ const main = async () => {
   info("Checking branch...");
   const branch = execSync("git branch --show-current").toString().trim();
 
-  if (!["main", "master"].includes(branch)) {
+  if (!["main", "master"].includes(branch) || branch !== inputs.sourceBranch) {
     setFailed(`Branch must be 'master' or 'main' - got: ${branch}`);
   }
   printSuccess(`Branch name is set to ${branch}\n`);
@@ -30,7 +32,12 @@ const main = async () => {
   addRemotes(inputs.appNames, inputs.debug);
 
   info("Starting push to Heroku remotes");
-  await pushToRemotes(inputs.appNames, branch, inputs.debug);
+  await pushToRemotes(
+    inputs.appNames,
+    branch,
+    inputs.targetBranch ?? inputs.sourceBranch ?? branch,
+    inputs.debug
+  );
   printSuccess("All done!");
   process.exit();
 };

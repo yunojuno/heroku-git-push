@@ -80,20 +80,26 @@ const handleProcessOutput = (
  * Pushes the current branch to the remotes of the provided app names.
  *
  * @param appNames unique Heroku app names
- * @param branch current branch name
+ * @param sourceBranch current branch name
+ * @param targetBranch branch to push to on Heroku
  * @param debug show all logs
  *
  * @return promise which resolves once all remotes have finished pushing
  */
 export const pushToRemotes = async (
   appNames: string[],
-  branch: string,
+  sourceBranch: string,
+  targetBranch: string,
   debug: boolean
 ) => {
   const pushToRemote = (app: string) =>
     new Promise<string>((pushed, failed) => {
-      printInfo(`Pushing ${branch} to remote`, app);
-      const pushProcess = spawn("git", ["push", app, branch]);
+      printInfo(`Pushing ${sourceBranch} to remote`, app);
+      const pushProcess = spawn("git", [
+        "push",
+        app,
+        `${sourceBranch}:${targetBranch}`,
+      ]);
 
       debug &&
         pushProcess.stdio.forEach((io) =>
