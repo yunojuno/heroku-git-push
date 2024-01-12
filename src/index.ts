@@ -17,8 +17,10 @@ const main = async () => {
   info("Checking branch...");
   const branch = execSync("git branch --show-current").toString().trim();
 
-  if (!["main", "master"].includes(branch) || branch !== inputs.sourceBranch) {
-    setFailed(`Branch must be 'master' or 'main' - got: ${branch}`);
+  if (!["main", "master", inputs.sourceBranch].includes(branch)) {
+    setFailed(
+      `Branch must be 'master', 'main', or '${inputs.sourceBranch}' - got: ${branch} `
+    );
   }
   printSuccess(`Branch name is set to ${branch}\n`);
 

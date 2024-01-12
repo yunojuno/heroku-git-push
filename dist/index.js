@@ -1596,10 +1596,14 @@ var handleProcessOutput = (data, app, pushed) => {
     pushed(app);
   }
 };
-var pushToRemotes = async (appNames, branch, debug) => {
+var pushToRemotes = async (appNames, sourceBranch, targetBranch, debug) => {
   const pushToRemote = (app) => new Promise((pushed, failed) => {
-    printInfo(`Pushing ${branch} to remote`, app);
-    const pushProcess = (0, import_child_process2.spawn)("git", ["push", app, branch]);
+    printInfo(`Pushing ${sourceBranch} to remote`, app);
+    const pushProcess = (0, import_child_process2.spawn)("git", [
+      "push",
+      app,
+      `${sourceBranch}:${targetBranch}`
+    ]);
     debug && pushProcess.stdio.forEach((io) => io == null ? void 0 : io.on("data", (data) => printLog(data.toString(), app)));
     pushProcess.stdout.on("data", (data) => {
       handleProcessOutput(data, app, pushed);
@@ -1634,13 +1638,16 @@ var inputs = {
   email: (0, import_core3.getInput)("email"),
   apiKey: (0, import_core3.getInput)("api_key"),
   appNames: (0, import_core3.getMultilineInput)("app_names"),
+  sourceBranch: (0, import_core3.getInput)("source_branch"),
+  targetBranch: (0, import_core3.getInput)("target_branch"),
   debug: (0, import_core3.getInput)("debug").toLowerCase() === "true"
 };
 var main = async () => {
+  var _a, _b;
   (0, import_core3.info)("Checking branch...");
   const branch = (0, import_child_process3.execSync)("git branch --show-current").toString().trim();
-  if (!["main", "master"].includes(branch)) {
-    (0, import_core3.setFailed)(`Branch must be 'master' or 'main' - got: ${branch}`);
+  if (!["main", "master", inputs.sourceBranch].includes(branch)) {
+    (0, import_core3.setFailed)(`Branch must be 'master', 'main', or '${inputs.sourceBranch}' - got: ${branch} `);
   }
   printSuccess(`Branch name is set to ${branch}
 `);
@@ -1651,7 +1658,7 @@ var main = async () => {
   (0, import_core3.info)("Setting remotes");
   addRemotes(inputs.appNames, inputs.debug);
   (0, import_core3.info)("Starting push to Heroku remotes");
-  await pushToRemotes(inputs.appNames, branch, inputs.debug);
+  await pushToRemotes(inputs.appNames, branch, (_b = (_a = inputs.targetBranch) != null ? _a : inputs.sourceBranch) != null ? _b : branch, inputs.debug);
   printSuccess("All done!");
   process.exit();
 };
